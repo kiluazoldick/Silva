@@ -78,7 +78,7 @@ export function CheckInOut() {
         console.log('Location not available')
       }
 
-      await checkIn(employeeId, locationData)
+      await checkIn(employeeId, locationData || undefined)
       toast.success('Check-in effectué avec succès!')
     } catch (error: any) {
       toast.error(error.message || 'Erreur lors du check-in')
@@ -107,7 +107,7 @@ export function CheckInOut() {
         console.log('Location not available')
       }
 
-      await checkOut(currentAttendance.id, locationData)
+      await checkOut(currentAttendance.id, locationData || undefined)
       toast.success('Check-out effectué avec succès!')
     } catch (error: any) {
       toast.error(error.message || 'Erreur lors du check-out')

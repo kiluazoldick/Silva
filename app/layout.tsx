@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
-
+// Remplacer Inter par une police système
 export const metadata: Metadata = {
   title: 'Silva - Gestion d\'Entreprise',
   description: 'Application complète de gestion d\'entreprise',
@@ -17,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className={inter.className}>
+      <body className="font-sans antialiased">
         {children}
         <Toaster position="top-right" richColors />
       </body>

@@ -26,7 +26,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       .from('tasks')
       .select('*')
       .eq('company_id', companyId)
-      .order('due_date', { ascending: true, nullsLast: true })
+      .order('due_date', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -57,7 +57,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   updateTask: async (id, task) => {
     const updateData = { ...task }
     
-    // Si le statut devient completed, ajouter la date de complétion
     if (task.status === 'completed' && !task.completed_at) {
       updateData.completed_at = new Date().toISOString()
     }
@@ -90,27 +89,27 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   },
 
   updateTaskStatus: async (id, status) => {
-    const updateData: Partial<Task> = { status }
-    
-    if (status === 'completed') {
-      updateData.completed_at = new Date().toISOString()
-    } else if (status !== 'completed') {
-      updateData.completed_at = null
-    }
-    
-    const { error } = await supabase
-      .from('tasks')
-      .update(updateData)
-      .eq('id', id)
+  const updateData: Partial<Task> = { status }
+  
+  if (status === 'completed') {
+    updateData.completed_at = new Date().toISOString()
+  } else {
+    updateData.completed_at = undefined
+  }
+  
+  const { error } = await supabase
+    .from('tasks')
+    .update(updateData)
+    .eq('id', id)
 
-    if (error) throw error
+  if (error) throw error
 
-    set((state) => ({
-      tasks: state.tasks.map((task) =>
-        task.id === id ? { ...task, ...updateData } : task
-      )
-    }))
-  },
+  set((state) => ({
+    tasks: state.tasks.map((task) =>
+      task.id === id ? { ...task, ...updateData } : task
+    )
+  }))
+},
 
   getTasksByStatus: (status) => {
     return get().tasks.filter((task) => task.status === status)
