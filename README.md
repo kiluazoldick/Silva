@@ -316,5 +316,3 @@ Pour toute question ou problème :
 ---
 
 ⭐ **N'oubliez pas de laisser une étoile si ce projet vous a aidé !**
-# Silva
-# Silva
