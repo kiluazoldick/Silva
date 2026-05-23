@@ -2,17 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { StatsCard } from "@/components/ui/StatsCard";
-import { ActivityChart } from "@/components/ui/ActivityChart";
 import { createClient } from "@/lib/supabase/client";
 import {
   Users,
   CheckSquare,
   Clock,
   TrendingUp,
-  ArrowRight,
   Calendar,
   AlertCircle,
   Award,
@@ -29,25 +24,101 @@ import { fr } from "date-fns/locale";
 
 const supabase = createClient();
 
-interface DashboardData {
-  companyName: string;
-  stats: {
-    totalEmployees: number;
-    activeEmployees: number;
-    totalTasks: number;
-    completedTasks: number;
-    completionRate: number;
-    presentToday: number;
-    totalHoursThisMonth: number;
-  };
-  recentTasks: any[];
-  upcomingDeadlines: any[];
-  recentActivity: any[];
-  weeklyActivity: { date: string; count: number }[];
-}
+// Styles constants
+const styles = {
+  page: {
+    padding: "24px",
+    maxWidth: "1280px",
+    margin: "0 auto",
+    width: "100%",
+  },
+  card: {
+    backgroundColor: "#ffffff",
+    border: "1px solid #e5e5e5",
+    borderRadius: "12px",
+    padding: "20px",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+  },
+  cardHover: {
+    transition: "all 0.2s ease",
+    cursor: "pointer",
+  },
+  statValue: {
+    fontSize: "28px",
+    fontWeight: 600,
+    color: "#1a1a1a",
+    lineHeight: 1.2,
+  },
+  statLabel: {
+    fontSize: "13px",
+    color: "#8c8c8c",
+    fontWeight: 500,
+  },
+  statSubValue: {
+    fontSize: "11px",
+    color: "#b3b3b3",
+    marginTop: "4px",
+  },
+  sectionTitle: {
+    fontSize: "16px",
+    fontWeight: 600,
+    color: "#1a1a1a",
+    marginBottom: "16px",
+  },
+  trendUp: {
+    fontSize: "11px",
+    color: "#22c55e",
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
+    marginTop: "8px",
+  },
+  trendDown: {
+    fontSize: "11px",
+    color: "#ef4444",
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
+    marginTop: "8px",
+  },
+  grid4: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+    gap: "16px",
+    marginBottom: "24px",
+  },
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gap: "24px",
+    marginBottom: "24px",
+  },
+  buttonOutline: {
+    padding: "10px 16px",
+    backgroundColor: "white",
+    border: "1px solid #e5e5e5",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontWeight: 500,
+    color: "#4a4a4a",
+    cursor: "pointer",
+    transition: "all 0.2s",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    width: "100%",
+    textDecoration: "none",
+  },
+  badge: {
+    padding: "4px 10px",
+    borderRadius: "20px",
+    fontSize: "11px",
+    fontWeight: 500,
+  },
+};
 
 export default function DashboardPage() {
-  const [data, setData] = useState<DashboardData | null>(null);
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
 
@@ -174,141 +245,400 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#2C4A6E] border-t-transparent mx-auto mb-4" />
-          <p className="text-sm text-gray-500">Chargement...</p>
+      <div
+        style={{
+          display: "flex",
+          height: "100vh",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#f5f5f4",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              width: "32px",
+              height: "32px",
+              border: "2px solid #2C4A6E",
+              borderTopColor: "transparent",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+              margin: "0 auto 16px",
+            }}
+          />
+          <p style={{ fontSize: "13px", color: "#8c8c8c" }}>Chargement...</p>
         </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="flex h-full items-center justify-center p-6">
-        <Card>
-          <div className="text-center py-12">
-            <Briefcase className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Bienvenue sur Silva ! 👋
-            </h3>
-            <p className="text-gray-500 mb-6">
-              Commencez par créer votre entreprise
-            </p>
-            <Link href="/company-setup">
-              <Button className="bg-[#2C4A6E] hover:bg-[#1E3A5F]">
-                Créer mon entreprise
-              </Button>
-            </Link>
-          </div>
-        </Card>
+      <div
+        style={{
+          display: "flex",
+          height: "100vh",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#f5f5f4",
+        }}
+      >
+        <div
+          style={{
+            ...styles.card,
+            maxWidth: "400px",
+            textAlign: "center",
+            padding: "48px 32px",
+          }}
+        >
+          <Briefcase
+            size={48}
+            style={{ color: "#d4d4d4", margin: "0 auto 16px" }}
+          />
+          <h3
+            style={{
+              fontSize: "18px",
+              fontWeight: 600,
+              color: "#1a1a1a",
+              marginBottom: "8px",
+            }}
+          >
+            Bienvenue sur Silva ! 👋
+          </h3>
+          <p
+            style={{ fontSize: "13px", color: "#8c8c8c", marginBottom: "24px" }}
+          >
+            Commencez par créer votre entreprise
+          </p>
+          <Link
+            href="/company-setup"
+            style={{
+              ...styles.buttonOutline,
+              justifyContent: "center",
+              backgroundColor: "#2C4A6E",
+              color: "white",
+              border: "none",
+            }}
+          >
+            Créer mon entreprise
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div style={styles.page}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "24px",
+          flexWrap: "wrap",
+          gap: "12px",
+        }}
+      >
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">
+          <h1
+            style={{
+              fontSize: "24px",
+              fontWeight: 600,
+              color: "#1a1a1a",
+              marginBottom: "4px",
+            }}
+          >
             Bonjour, {userName} 👋
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p style={{ fontSize: "13px", color: "#8c8c8c" }}>
             Voici ce qui se passe dans {data.companyName}
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-400">
-          <Calendar className="h-4 w-4" />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "13px",
+            color: "#b3b3b3",
+          }}
+        >
+          <Calendar size={14} />
           <span>{format(new Date(), "EEEE d MMMM yyyy", { locale: fr })}</span>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          title="Employés"
-          value={data.stats.totalEmployees}
-          subValue={`${data.stats.activeEmployees} actifs`}
-          icon={Users}
-          trend={{ value: 12, isPositive: true }}
-          link="/employees"
-        />
-        <StatsCard
-          title="Tâches complétées"
-          value={`${data.stats.completionRate}%`}
-          subValue={`${data.stats.completedTasks}/${data.stats.totalTasks}`}
-          icon={CheckSquare}
-          trend={{
-            value: data.stats.completionRate > 50 ? 8 : -5,
-            isPositive: data.stats.completionRate > 50,
-          }}
-          link="/tasks"
-        />
-        <StatsCard
-          title="Présents aujourd'hui"
-          value={data.stats.presentToday}
-          subValue={`sur ${data.stats.totalEmployees} employés`}
-          icon={Clock}
-          link="/attendance"
-        />
-        <StatsCard
-          title="Heures travaillées"
-          value={`${data.stats.totalHoursThisMonth}h`}
-          subValue="ce mois-ci"
-          icon={TrendingUp}
-          trend={{ value: 5, isPositive: true }}
-          link="/statistics"
-        />
+      <div style={styles.grid4}>
+        {/* Card 1 - Employés */}
+        <div style={{ ...styles.card, ...styles.cardHover }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
+            <div>
+              <p style={styles.statLabel}>Employés</p>
+              <p style={styles.statValue}>{data.stats.totalEmployees}</p>
+              <p style={styles.statSubValue}>
+                {data.stats.activeEmployees} actifs
+              </p>
+            </div>
+            <div
+              style={{
+                backgroundColor: "#f5f5f4",
+                padding: "8px",
+                borderRadius: "8px",
+              }}
+            >
+              <Users size={18} color="#8c8c8c" />
+            </div>
+          </div>
+          <div style={styles.trendUp}>
+            <TrendingUp size={11} />
+            <span>12% vs mois dernier</span>
+          </div>
+        </div>
+
+        {/* Card 2 - Tâches complétées */}
+        <div style={{ ...styles.card, ...styles.cardHover }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
+            <div>
+              <p style={styles.statLabel}>Tâches complétées</p>
+              <p style={styles.statValue}>{data.stats.completionRate}%</p>
+              <p style={styles.statSubValue}>
+                {data.stats.completedTasks}/{data.stats.totalTasks}
+              </p>
+            </div>
+            <div
+              style={{
+                backgroundColor: "#f5f5f4",
+                padding: "8px",
+                borderRadius: "8px",
+              }}
+            >
+              <CheckSquare size={18} color="#8c8c8c" />
+            </div>
+          </div>
+          <div
+            style={
+              data.stats.completionRate > 50 ? styles.trendUp : styles.trendDown
+            }
+          >
+            <TrendingUp size={11} />
+            <span>
+              {data.stats.completionRate > 50 ? "8%" : "5%"} vs mois dernier
+            </span>
+          </div>
+        </div>
+
+        {/* Card 3 - Présents aujourd'hui */}
+        <div style={{ ...styles.card, ...styles.cardHover }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
+            <div>
+              <p style={styles.statLabel}>Présents aujourd'hui</p>
+              <p style={styles.statValue}>{data.stats.presentToday}</p>
+              <p style={styles.statSubValue}>
+                sur {data.stats.totalEmployees} employés
+              </p>
+            </div>
+            <div
+              style={{
+                backgroundColor: "#f5f5f4",
+                padding: "8px",
+                borderRadius: "8px",
+              }}
+            >
+              <Clock size={18} color="#8c8c8c" />
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4 - Heures travaillées */}
+        <div style={{ ...styles.card, ...styles.cardHover }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
+            <div>
+              <p style={styles.statLabel}>Heures travaillées</p>
+              <p style={styles.statValue}>{data.stats.totalHoursThisMonth}h</p>
+              <p style={styles.statSubValue}>ce mois-ci</p>
+            </div>
+            <div
+              style={{
+                backgroundColor: "#f5f5f4",
+                padding: "8px",
+                borderRadius: "8px",
+              }}
+            >
+              <TrendingUp size={18} color="#8c8c8c" />
+            </div>
+          </div>
+          <div style={styles.trendUp}>
+            <TrendingUp size={11} />
+            <span>5% vs mois dernier</span>
+          </div>
+        </div>
       </div>
 
-      {/* Graphique activité */}
-      <ActivityChart data={data.weeklyActivity} />
+      {/* Activity Chart */}
+      <div style={{ ...styles.card, marginBottom: "24px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "16px",
+          }}
+        >
+          <div>
+            <h3 style={styles.sectionTitle}>Activité hebdomadaire</h3>
+            <p style={{ fontSize: "11px", color: "#b3b3b3" }}>
+              Tâches créées cette semaine
+            </p>
+          </div>
+          <Activity size={18} color="#b3b3b3" />
+        </div>
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            justifyContent: "space-between",
+          }}
+        >
+          {data.weeklyActivity.map((day: any, i: number) => (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <div
+                style={{
+                  width: "100%",
+                  backgroundColor: day.count > 0 ? "#2C4A6E" : "#f0f0f0",
+                  height: `${Math.max(day.count * 10, 4)}px`,
+                  maxHeight: "60px",
+                  minHeight: "4px",
+                  borderRadius: "4px",
+                  transition: "all 0.2s",
+                }}
+              />
+              <span style={{ fontSize: "11px", color: "#b3b3b3" }}>
+                {day.date}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
 
-      {/* Deux colonnes */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Tâches récentes */}
-        <Card>
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-base font-semibold text-gray-900">
-              Tâches récentes
-            </h3>
+      {/* Two columns */}
+      <div style={styles.grid2}>
+        {/* Recent Tasks */}
+        <div style={styles.card}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "16px",
+            }}
+          >
+            <h3 style={styles.sectionTitle}>Tâches récentes</h3>
             <Link
               href="/tasks"
-              className="text-xs text-[#2C4A6E] hover:underline"
+              style={{
+                fontSize: "11px",
+                color: "#2C4A6E",
+                textDecoration: "none",
+              }}
             >
               Voir tout
             </Link>
           </div>
-          <div className="space-y-3">
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
             {data.recentTasks.length === 0 ? (
-              <div className="py-8 text-center">
-                <CheckSquare className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                <p className="text-sm text-gray-400">Aucune tâche</p>
+              <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <CheckSquare
+                  size={32}
+                  color="#d4d4d4"
+                  style={{ margin: "0 auto 8px" }}
+                />
+                <p style={{ fontSize: "13px", color: "#b3b3b3" }}>
+                  Aucune tâche
+                </p>
               </div>
             ) : (
-              data.recentTasks.map((task) => (
+              data.recentTasks.map((task: any) => (
                 <div
                   key={task.id}
-                  className="flex items-center justify-between rounded-lg border border-gray-100 p-3 transition hover:border-gray-200"
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "12px",
+                    border: "1px solid #f0f0f0",
+                    borderRadius: "8px",
+                  }}
                 >
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">
+                  <div>
+                    <p
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        color: "#1a1a1a",
+                        marginBottom: "4px",
+                      }}
+                    >
                       {task.title}
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p style={{ fontSize: "11px", color: "#b3b3b3" }}>
                       Assignée à {task.employee?.first_name}{" "}
                       {task.employee?.last_name}
                     </p>
                   </div>
                   <div
-                    className={`ml-2 rounded-full px-2 py-0.5 text-xs font-medium ${
-                      task.status === "completed"
-                        ? "bg-green-50 text-green-700"
-                        : task.status === "in_progress"
-                          ? "bg-blue-50 text-blue-700"
-                          : "bg-gray-50 text-gray-500"
-                    }`}
+                    style={{
+                      ...styles.badge,
+                      backgroundColor:
+                        task.status === "completed"
+                          ? "#e8f5e9"
+                          : task.status === "in_progress"
+                            ? "#e3f2fd"
+                            : "#f5f5f4",
+                      color:
+                        task.status === "completed"
+                          ? "#2e7d32"
+                          : task.status === "in_progress"
+                            ? "#1565c0"
+                            : "#8c8c8c",
+                    }}
                   >
                     {task.status === "completed"
                       ? "Terminé"
@@ -320,38 +650,71 @@ export default function DashboardPage() {
               ))
             )}
           </div>
-        </Card>
+        </div>
 
-        {/* Activité récente */}
-        <Card>
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-base font-semibold text-gray-900">
-              Activité récente
-            </h3>
-            <Award className="h-4 w-4 text-gray-400" />
+        {/* Recent Activity */}
+        <div style={styles.card}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "16px",
+            }}
+          >
+            <h3 style={styles.sectionTitle}>Activité récente</h3>
+            <Award size={14} color="#b3b3b3" />
           </div>
-          <div className="space-y-3">
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
             {data.recentActivity.length === 0 ? (
-              <div className="py-8 text-center">
-                <Activity className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                <p className="text-sm text-gray-400">Aucune activité récente</p>
+              <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <Activity
+                  size={32}
+                  color="#d4d4d4"
+                  style={{ margin: "0 auto 8px" }}
+                />
+                <p style={{ fontSize: "13px", color: "#b3b3b3" }}>
+                  Aucune activité récente
+                </p>
               </div>
             ) : (
-              data.recentActivity.map((activity, i) => (
+              data.recentActivity.map((activity: any, i: number) => (
                 <div
                   key={i}
-                  className="flex items-start gap-3 rounded-lg border border-gray-100 p-3"
+                  style={{
+                    display: "flex",
+                    gap: "12px",
+                    padding: "12px",
+                    border: "1px solid #f0f0f0",
+                    borderRadius: "8px",
+                  }}
                 >
-                  <div className="rounded-full bg-gray-50 p-1.5">
+                  <div
+                    style={{
+                      backgroundColor: "#f5f5f4",
+                      padding: "6px",
+                      borderRadius: "8px",
+                    }}
+                  >
                     {activity.type === "task" ? (
-                      <CheckSquare className="h-3 w-3 text-gray-500" />
+                      <CheckSquare size={12} color="#8c8c8c" />
                     ) : (
-                      <Users className="h-3 w-3 text-gray-500" />
+                      <Users size={12} color="#8c8c8c" />
                     )}
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-700">{activity.title}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                  <div>
+                    <p
+                      style={{
+                        fontSize: "13px",
+                        color: "#4a4a4a",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      {activity.title}
+                    </p>
+                    <p style={{ fontSize: "11px", color: "#b3b3b3" }}>
                       {formatDistanceToNow(new Date(activity.date), {
                         locale: fr,
                         addSuffix: true,
@@ -362,36 +725,63 @@ export default function DashboardPage() {
               ))
             )}
           </div>
-        </Card>
+        </div>
       </div>
 
-      {/* Échéances et actions */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Échéances */}
-        <Card>
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-base font-semibold text-gray-900">
-              Échéances à venir
-            </h3>
-            <Calendar className="h-4 w-4 text-gray-400" />
+      {/* Deadlines and Quick Actions */}
+      <div style={styles.grid2}>
+        {/* Upcoming Deadlines */}
+        <div style={styles.card}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "16px",
+            }}
+          >
+            <h3 style={styles.sectionTitle}>Échéances à venir</h3>
+            <Calendar size={14} color="#b3b3b3" />
           </div>
-          <div className="space-y-3">
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
             {data.upcomingDeadlines.length === 0 ? (
-              <div className="py-8 text-center">
-                <Calendar className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                <p className="text-sm text-gray-400">Aucune échéance</p>
+              <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <Calendar
+                  size={32}
+                  color="#d4d4d4"
+                  style={{ margin: "0 auto 8px" }}
+                />
+                <p style={{ fontSize: "13px", color: "#b3b3b3" }}>
+                  Aucune échéance
+                </p>
               </div>
             ) : (
-              data.upcomingDeadlines.map((task) => (
+              data.upcomingDeadlines.map((task: any) => (
                 <div
                   key={task.id}
-                  className="flex items-center justify-between rounded-lg border border-gray-100 p-3"
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "12px",
+                    border: "1px solid #f0f0f0",
+                    borderRadius: "8px",
+                  }}
                 >
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        color: "#1a1a1a",
+                        marginBottom: "4px",
+                      }}
+                    >
                       {task.title}
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p style={{ fontSize: "11px", color: "#b3b3b3" }}>
                       Due{" "}
                       {formatDistanceToNow(new Date(task.due_date), {
                         locale: fr,
@@ -400,60 +790,38 @@ export default function DashboardPage() {
                     </p>
                   </div>
                   {new Date(task.due_date) < new Date() ? (
-                    <AlertCircle className="h-4 w-4 text-red-400" />
+                    <AlertCircle size={14} color="#ef4444" />
                   ) : (
-                    <Calendar className="h-4 w-4 text-gray-300" />
+                    <Calendar size={14} color="#d4d4d4" />
                   )}
                 </div>
               ))
             )}
           </div>
-        </Card>
+        </div>
 
-        {/* Actions rapides */}
-        <Card>
-          <h3 className="mb-4 text-base font-semibold text-gray-900">
-            Actions rapides
-          </h3>
-          <div className="flex flex-col gap-2">
-            <Link href="/employees">
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-2 text-sm font-normal"
-              >
-                <Users className="h-4 w-4" />
-                Ajouter un employé
-              </Button>
+        {/* Quick Actions */}
+        <div style={styles.card}>
+          <h3 style={styles.sectionTitle}>Actions rapides</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <Link href="/employees" style={styles.buttonOutline}>
+              <Users size={14} />
+              Ajouter un employé
             </Link>
-            <Link href="/tasks">
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-2 text-sm font-normal"
-              >
-                <CheckSquare className="h-4 w-4" />
-                Créer une tâche
-              </Button>
+            <Link href="/tasks" style={styles.buttonOutline}>
+              <CheckSquare size={14} />
+              Créer une tâche
             </Link>
-            <Link href="/attendance">
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-2 text-sm font-normal"
-              >
-                <Clock className="h-4 w-4" />
-                Enregistrer une présence
-              </Button>
+            <Link href="/attendance" style={styles.buttonOutline}>
+              <Clock size={14} />
+              Enregistrer une présence
             </Link>
-            <Link href="/statistics">
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-2 text-sm font-normal"
-              >
-                <TrendingUp className="h-4 w-4" />
-                Voir les statistiques
-              </Button>
+            <Link href="/statistics" style={styles.buttonOutline}>
+              <TrendingUp size={14} />
+              Voir les statistiques
             </Link>
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );
