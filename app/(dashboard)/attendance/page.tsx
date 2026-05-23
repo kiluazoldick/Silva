@@ -27,8 +27,6 @@ import { toast } from 'sonner'
 import { format, startOfMonth, endOfMonth, isToday, isSameDay } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
-const supabase = createClient()
-
 interface Employee {
   id: string
   first_name: string
@@ -48,6 +46,7 @@ interface AttendanceRecord {
 }
 
 export default function AttendancePage() {
+  const supabase = createClient()
   const [selectedEmployee, setSelectedEmployee] = useState('')
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [checkIn, setCheckIn] = useState('09:00')
