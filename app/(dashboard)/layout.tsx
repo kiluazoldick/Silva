@@ -15,9 +15,7 @@ import {
   Building2,
   LogOut,
   Menu,
-  X,
-  Bell,
-  ChevronDown
+  X
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
@@ -177,7 +175,9 @@ export default function DashboardLayout({
           {/* User info */}
           <div className="border-t border-border p-4">
             <div className="flex items-center gap-3">
-              <AvatarGenerator name={user?.email || ''} size="md" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-semibold text-sm">
+                {(user?.email || '')[0]?.toUpperCase()}
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
                   {user?.email?.split('@')[0]}
@@ -202,8 +202,8 @@ export default function DashboardLayout({
       {/* Main content */}
       <div className="flex-1 overflow-auto bg-background">
         {/* Header */}
-        <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
-          <div className="flex h-16 items-center justify-between px-4 sm:px-6 gap-4">
+        <header className="sticky top-0 z-10 bg-white border-b border-border">
+          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
             <button
               onClick={() => setSidebarOpen(true)}
               className="rounded-lg p-2 hover:bg-muted lg:hidden"
@@ -211,30 +211,16 @@ export default function DashboardLayout({
               <Menu className="h-6 w-6" />
             </button>
             
-            <div className="hidden md:flex flex-1 max-w-xs">
-              <SearchBar placeholder="Chercher..." />
-            </div>
+            <div className="flex-1" />
             
-            <div className="flex items-center gap-3 ml-auto">
-              <span className="hidden sm:text-xs text-muted-foreground">
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground hidden sm:inline">
                 {new Date().toLocaleDateString('fr-FR', {
                   weekday: 'short',
                   month: 'short',
                   day: 'numeric',
                 })}
               </span>
-              
-              <button className="relative p-2 hover:bg-muted rounded-lg transition-colors">
-                <Bell className="h-5 w-5 text-muted-foreground" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
-              </button>
-              
-              <DarkModeToggle />
-              
-              <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-muted transition-colors">
-                <AvatarGenerator name={user?.email || ''} size="sm" />
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              </button>
             </div>
           </div>
         </header>

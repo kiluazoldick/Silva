@@ -369,38 +369,30 @@ export default function AttendancePage() {
 
               {/* Statistics Cards */}
               <div className="grid gap-4 sm:grid-cols-4">
-                
-                    title="Heures/mois"
-                    value={`${monthStats.totalHours}h`}
-                    icon={<Clock className="w-6 h-6" />}
-                    color="primary"
-                    description="Heures travaillées"
-                  />
-                
-                
-                    title="Jours présents"
-                    value={monthStats.totalDays}
-                    icon={<CheckCircle2 className="w-6 h-6" />}
-                    color="success"
-                    description="Jours travaillés ce mois"
-                  />
-                
-                
-                    title="Moyenne/jour"
-                    value={`${monthStats.averageHours}h`}
-                    icon={<TrendingUp className="w-6 h-6" />}
-                    color="primary"
-                    description="Heures par jour"
-                  />
-                
-                
-                    title="Absences"
-                    value={monthStats.totalAbsences}
-                    icon={<AlertCircle className="w-6 h-6" />}
-                    color="error"
-                    description="Jours d'absence"
-                  />
-                
+                <Card>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Heures/mois</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{monthStats.totalHours}h</p>
+                  </div>
+                </Card>
+                <Card>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Jours présents</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{monthStats.totalDays}</p>
+                  </div>
+                </Card>
+                <Card>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Moyenne/jour</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{monthStats.averageHours}h</p>
+                  </div>
+                </Card>
+                <Card>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Absences</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{monthStats.totalAbsences}</p>
+                  </div>
+                </Card>
               </div>
 
               {/* Formulaire */}

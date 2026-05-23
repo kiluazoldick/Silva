@@ -2,7 +2,6 @@
 
 import { ReactNode, useState } from 'react'
 import { Button } from '@/components/ui/Button'
-import { ProgressBar } from '@/components/ui/ProgressBar'
 import { ChevronRight, ChevronLeft, X, CheckCircle } from 'lucide-react'
 
 interface OnboardingStep {
@@ -79,7 +78,12 @@ export function OnboardingFlow({
 
         {/* Progress Bar */}
         <div className="px-6 pt-4">
-          <ProgressBar value={progress} max={100} size="md" />
+          <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-primary h-full transition-all"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
           <p className="text-xs text-muted-foreground mt-2">
             Étape {currentStep + 1} sur {steps.length}
           </p>
