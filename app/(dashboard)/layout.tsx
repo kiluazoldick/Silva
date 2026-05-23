@@ -6,8 +6,6 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { DarkModeToggle } from '@/components/ui/DarkModeToggle'
-import { SearchBar } from '@/components/ui/SearchBar'
 import { 
   LayoutDashboard, 
   Users, 
@@ -22,7 +20,6 @@ import {
   ChevronDown
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { AvatarGenerator } from '@/components/ui/AvatarGenerator'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },

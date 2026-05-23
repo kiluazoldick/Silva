@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { ScrollAnimation } from '@/components/ui/ScrollAnimation'
-import { ProgressBar } from '@/components/ui/ProgressBar'
 import { createClient } from '@/lib/supabase/client'
 import { Users, CheckSquare, Clock, TrendingUp, ArrowRight, Calendar, AlertCircle, Zap, Target } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
@@ -115,7 +113,7 @@ export default function DashboardPage() {
   if (!data) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <ScrollAnimation animation="slideUp">
+        
           <Card className="max-w-md w-full border-primary/20 bg-gradient-primary-subtle">
             <div className="text-center py-12">
               <div className="inline-flex p-4 rounded-full bg-primary/20 mb-6">
@@ -134,7 +132,7 @@ export default function DashboardPage() {
               </Link>
             </div>
           </Card>
-        </ScrollAnimation>
+        
       </div>
     )
   }
@@ -177,7 +175,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
-      <ScrollAnimation animation="slideDown">
+      
         <div className="relative overflow-hidden rounded-2xl bg-gradient-primary p-8 text-white">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
@@ -191,18 +189,14 @@ export default function DashboardPage() {
             </p>
           </div>
         </div>
-      </ScrollAnimation>
+      
 
       {/* Stats Cards */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {statsCards.map((stat, index) => {
           const Icon = stat.icon
           return (
-            <ScrollAnimation
-              key={index}
-              animation="slideUp"
-              delay={index * 100}
-            >
+            
               <Link href={stat.link}>
                 <Card className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/30 h-full group">
                   <div className="flex items-start justify-between mb-4">
@@ -221,14 +215,14 @@ export default function DashboardPage() {
                   </div>
                 </Card>
               </Link>
-            </ScrollAnimation>
+            
           )
         })}
       </div>
 
       {/* Tasks & Deadlines */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <ScrollAnimation animation="slideUp" delay={100}>
+        
           <Card className="flex flex-col h-full">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-foreground">Tâches récentes</h3>
@@ -272,9 +266,9 @@ export default function DashboardPage() {
               )}
             </div>
           </Card>
-        </ScrollAnimation>
+        
 
-        <ScrollAnimation animation="slideUp" delay={200}>
+        
           <Card className="flex flex-col h-full">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -300,11 +294,11 @@ export default function DashboardPage() {
               )}
             </div>
           </Card>
-        </ScrollAnimation>
+        
       </div>
 
       {/* Quick Actions */}
-      <ScrollAnimation animation="slideUp" delay={300}>
+      
         <Card>
           <h3 className="mb-6 text-lg font-semibold text-foreground flex items-center gap-2">
             <Zap className="w-5 h-5 text-primary" />
@@ -331,7 +325,7 @@ export default function DashboardPage() {
             </Link>
           </div>
         </Card>
-      </ScrollAnimation>
+      
     </div>
   )
 }

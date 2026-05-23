@@ -13,7 +13,6 @@ import {
   Download,
   RefreshCw
 } from 'lucide-react'
-import { toast } from 'sonner'
 import { format, startOfMonth, endOfMonth, subDays, eachDayOfInterval } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import {
@@ -92,7 +91,6 @@ export default function StatisticsPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        toast.error('Non authentifié')
         setLoading(false)
         return
       }
@@ -267,7 +265,6 @@ export default function StatisticsPage() {
 
     } catch (error) {
       console.error('Error loading stats:', error)
-      toast.error('Erreur lors du chargement des statistiques')
     } finally {
       setLoading(false)
     }
@@ -287,7 +284,6 @@ export default function StatisticsPage() {
     a.download = `statistiques_${format(new Date(), 'yyyy-MM-dd')}.csv`
     a.click()
     URL.revokeObjectURL(url)
-    toast.success('Export CSV effectué')
   }
 
   if (loading) {

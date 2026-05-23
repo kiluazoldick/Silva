@@ -9,10 +9,7 @@ import { Textarea } from '@/components/ui/Textarea'
 import { Select } from '@/components/ui/Select'
 import { SectorSelector } from '@/components/company/SectorSelector'
 import { createClient } from '@/lib/supabase/client'
-import { useCompanyStore } from '@/lib/store/companyStore'
 import { Building2, Upload, Save, Trash2, AlertCircle } from 'lucide-react'
-import { toast } from 'sonner'
-import { ConfirmModal } from '@/components/ui/ConfirmModal'
 
 const supabase = createClient()
 
@@ -89,7 +86,6 @@ export default function CompanyPage() {
       .upload(filePath, file)
 
     if (uploadError) {
-      toast.error('Erreur lors de l\'upload du logo')
       setUploading(false)
       return
     }
@@ -100,7 +96,6 @@ export default function CompanyPage() {
 
     handleChange('logo', publicUrl)
     setUploading(false)
-    toast.success('Logo téléchargé avec succès')
   }
 
   const handleSubmit = async () => {
@@ -109,11 +104,9 @@ export default function CompanyPage() {
     setLoading(true)
     try {
       await updateCompany(company.id, formData)
-      toast.success('Entreprise mise à jour avec succès')
       setOriginalData(formData)
       setHasChanges(false)
     } catch (error: any) {
-      toast.error(error.message || 'Erreur lors de la mise à jour')
     } finally {
       setLoading(false)
     }
@@ -130,10 +123,8 @@ export default function CompanyPage() {
       await supabase.from('employees').delete().eq('company_id', company.id)
       await supabase.from('companies').delete().eq('id', company.id)
       
-      toast.success('Entreprise supprimée')
       router.push('/company-setup')
     } catch (error: any) {
-      toast.error(error.message || 'Erreur lors de la suppression')
     } finally {
       setLoading(false)
       setIsDeleteModalOpen(false)
@@ -274,7 +265,6 @@ export default function CompanyPage() {
       </Card>
 
       {/* Modal confirmation suppression */}
-      <ConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteCompany}

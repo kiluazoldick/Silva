@@ -6,8 +6,6 @@ import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { ScrollAnimation } from '@/components/ui/ScrollAnimation'
-import { StatWidget } from '@/components/dashboard/StatWidget'
 import { createClient } from '@/lib/supabase/client'
 import { 
   Calendar, 
@@ -23,7 +21,6 @@ import {
   AlertCircle,
   PlusCircle
 } from 'lucide-react'
-import { toast } from 'sonner'
 import { format, startOfMonth, endOfMonth, isToday, isSameDay } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -175,7 +172,6 @@ export default function AttendancePage() {
 
   const handleSave = async () => {
     if (!selectedEmployee) {
-      toast.error('Sélectionnez un employé')
       return
     }
 
@@ -186,7 +182,6 @@ export default function AttendancePage() {
     const hoursWorked = (checkOutDateTime.getTime() - checkInDateTime.getTime()) / (1000 * 3600)
 
     if (hoursWorked <= 0) {
-      toast.error('L\'heure de départ doit être après l\'heure d\'arrivée')
       setSaving(false)
       return
     }
@@ -204,7 +199,6 @@ export default function AttendancePage() {
           .eq('id', existingId)
 
         if (error) throw error
-        toast.success('Présence mise à jour')
       } else {
         const { error } = await supabase
           .from('attendance')
@@ -218,13 +212,11 @@ export default function AttendancePage() {
           }])
 
         if (error) throw error
-        toast.success('Présence enregistrée')
       }
       
       await loadEmployeeHistory(selectedEmployee)
       
     } catch (error: any) {
-      toast.error(error.message || 'Erreur')
     } finally {
       setSaving(false)
     }
@@ -240,9 +232,7 @@ export default function AttendancePage() {
       .eq('id', existingId)
 
     if (error) {
-      toast.error('Erreur lors de la suppression')
     } else {
-      toast.success('Présence supprimée')
       setExistingId(null)
       await loadEmployeeHistory(selectedEmployee)
     }
@@ -274,7 +264,7 @@ export default function AttendancePage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <ScrollAnimation animation="slideDown">
+      
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Gestion des présences</h1>
@@ -287,7 +277,7 @@ export default function AttendancePage() {
             </Button>
           </div>
         </div>
-      </ScrollAnimation>
+      
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Colonne gauche - Liste des employés */}
@@ -379,42 +369,38 @@ export default function AttendancePage() {
 
               {/* Statistics Cards */}
               <div className="grid gap-4 sm:grid-cols-4">
-                <ScrollAnimation animation="slideUp" delay={0}>
-                  <StatWidget
+                
                     title="Heures/mois"
                     value={`${monthStats.totalHours}h`}
                     icon={<Clock className="w-6 h-6" />}
                     color="primary"
                     description="Heures travaillées"
                   />
-                </ScrollAnimation>
-                <ScrollAnimation animation="slideUp" delay={100}>
-                  <StatWidget
+                
+                
                     title="Jours présents"
                     value={monthStats.totalDays}
                     icon={<CheckCircle2 className="w-6 h-6" />}
                     color="success"
                     description="Jours travaillés ce mois"
                   />
-                </ScrollAnimation>
-                <ScrollAnimation animation="slideUp" delay={200}>
-                  <StatWidget
+                
+                
                     title="Moyenne/jour"
                     value={`${monthStats.averageHours}h`}
                     icon={<TrendingUp className="w-6 h-6" />}
                     color="primary"
                     description="Heures par jour"
                   />
-                </ScrollAnimation>
-                <ScrollAnimation animation="slideUp" delay={300}>
-                  <StatWidget
+                
+                
                     title="Absences"
                     value={monthStats.totalAbsences}
                     icon={<AlertCircle className="w-6 h-6" />}
                     color="error"
                     description="Jours d'absence"
                   />
-                </ScrollAnimation>
+                
               </div>
 
               {/* Formulaire */}

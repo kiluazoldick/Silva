@@ -4,18 +4,9 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Modal } from '@/components/ui/Modal'
-import { ConfirmModal } from '@/components/ui/ConfirmModal'
-import { ScrollAnimation } from '@/components/ui/ScrollAnimation'
-import { EmployeeList } from '@/components/employees/EmployeeList'
-import { EmployeeForm } from '@/components/employees/EmployeeForm'
-import { StatWidget } from '@/components/dashboard/StatWidget'
-import { useEmployeeStore } from '@/lib/store/employeeStore'
-import { useCompanyStore } from '@/lib/store/companyStore'
 import { createClient } from '@/lib/supabase/client'
 import { Employee } from '@/types'
 import { Plus, Users as UsersIcon, CheckCircle2, AlertCircle, Clock } from 'lucide-react'
-import { toast } from 'sonner'
 
 const supabase = createClient()
 
@@ -94,14 +85,11 @@ export default function EmployeesPage() {
 
       if (selectedEmployee) {
         await updateEmployee(selectedEmployee.id, employeeData)
-        toast.success('Employé modifié avec succès')
       } else {
         await addEmployee(employeeData)
-        toast.success('Employé ajouté avec succès')
       }
       setIsModalOpen(false)
     } catch (error: any) {
-      toast.error(error.message || 'Une erreur est survenue')
     } finally {
       setSubmitting(false)
     }
@@ -113,10 +101,8 @@ export default function EmployeesPage() {
     setDeleting(true)
     try {
       await deleteEmployee(selectedEmployee.id)
-      toast.success('Employé supprimé avec succès')
       setIsDeleteModalOpen(false)
     } catch (error: any) {
-      toast.error(error.message || 'Erreur lors de la suppression')
     } finally {
       setDeleting(false)
       setSelectedEmployee(null)
@@ -142,7 +128,7 @@ export default function EmployeesPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <ScrollAnimation animation="slideDown">
+      
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Employés</h1>
@@ -155,21 +141,19 @@ export default function EmployeesPage() {
             Ajouter un employé
           </Button>
         </div>
-      </ScrollAnimation>
+      
 
       {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <ScrollAnimation animation="slideUp" delay={0}>
-          <StatWidget
+        
             title="Total employés"
             value={employees.length}
             icon={<UsersIcon className="w-6 h-6" />}
             color="primary"
             description="Tous les membres de l'équipe"
           />
-        </ScrollAnimation>
-        <ScrollAnimation animation="slideUp" delay={100}>
-          <StatWidget
+        
+        
             title="Actifs"
             value={activeCount}
             icon={<CheckCircle2 className="w-6 h-6" />}
@@ -178,29 +162,27 @@ export default function EmployeesPage() {
             trend="up"
             trendValue={`${Math.round((activeCount / Math.max(employees.length, 1)) * 100)}%`}
           />
-        </ScrollAnimation>
-        <ScrollAnimation animation="slideUp" delay={200}>
-          <StatWidget
+        
+        
             title="En congé"
             value={onLeaveCount}
             icon={<Clock className="w-6 h-6" />}
             color="warning"
             description="Employés en congé"
           />
-        </ScrollAnimation>
-        <ScrollAnimation animation="slideUp" delay={300}>
-          <StatWidget
+        
+        
             title="Inactifs"
             value={inactiveCount}
             icon={<AlertCircle className="w-6 h-6" />}
             color="error"
             description="Employés inactifs"
           />
-        </ScrollAnimation>
+        
       </div>
 
       {/* Employee List */}
-      <ScrollAnimation animation="slideUp" delay={400}>
+      
         <Card className="border-primary/10">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-foreground">Liste des employés</h2>
@@ -208,23 +190,20 @@ export default function EmployeesPage() {
               {employees.length} employé{employees.length !== 1 ? 's' : ''} enregistré{employees.length !== 1 ? 's' : ''}
             </p>
           </div>
-          <EmployeeList
             employees={employees}
             onEdit={handleEdit}
             onDelete={handleDelete}
             loading={loading}
           />
         </Card>
-      </ScrollAnimation>
+      
 
       {/* Modal Ajout/Modification */}
-      <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={selectedEmployee ? 'Modifier l\'employé' : 'Ajouter un employé'}
         size="lg"
       >
-        <EmployeeForm
           initialData={selectedEmployee ? {
             first_name: selectedEmployee.first_name,
             last_name: selectedEmployee.last_name,
@@ -245,7 +224,6 @@ export default function EmployeesPage() {
       </Modal>
 
       {/* Modal Confirmation suppression */}
-      <ConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}

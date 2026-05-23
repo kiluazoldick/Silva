@@ -3,19 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
-import { Modal } from '@/components/ui/Modal'
-import { ConfirmModal } from '@/components/ui/ConfirmModal'
-import { ScrollAnimation } from '@/components/ui/ScrollAnimation'
-import { KanbanColumn } from '@/components/tasks/KanbanColumn'
 import { TaskForm } from '@/components/tasks/TaskForm'
-import { StatWidget } from '@/components/dashboard/StatWidget'
-import { useTaskStore } from '@/lib/store/taskStore'
-import { useEmployeeStore } from '@/lib/store/employeeStore'
-import { useCompanyStore } from '@/lib/store/companyStore'
 import { createClient } from '@/lib/supabase/client'
 import { Task } from '@/types'
 import { Plus, CheckCircle2, Clock, AlertCircle, TrendingUp } from 'lucide-react'
-import { toast } from 'sonner'
 
 const supabase = createClient()
 
@@ -87,9 +78,7 @@ export default function TasksPage() {
     if (task && task.status !== newStatus) {
       try {
         await updateTaskStatus(taskId, newStatus)
-        toast.success('Tâche déplacée')
       } catch (error) {
-        toast.error('Erreur lors du déplacement')
       }
     }
   }
@@ -116,14 +105,11 @@ export default function TasksPage() {
 
       if (selectedTask) {
         await updateTask(selectedTask.id, taskData)
-        toast.success('Tâche modifiée avec succès')
       } else {
         await addTask(taskData)
-        toast.success('Tâche créée avec succès')
       }
       setIsModalOpen(false)
     } catch (error: any) {
-      toast.error(error.message || 'Une erreur est survenue')
     } finally {
       setSubmitting(false)
     }
@@ -135,10 +121,8 @@ export default function TasksPage() {
     setDeleting(true)
     try {
       await deleteTask(selectedTask.id)
-      toast.success('Tâche supprimée avec succès')
       setIsDeleteModalOpen(false)
     } catch (error: any) {
-      toast.error(error.message || 'Erreur lors de la suppression')
     } finally {
       setDeleting(false)
       setSelectedTask(null)
@@ -170,7 +154,7 @@ export default function TasksPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <ScrollAnimation animation="slideDown">
+      
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Tâches</h1>
@@ -183,30 +167,27 @@ export default function TasksPage() {
             Nouvelle tâche
           </Button>
         </div>
-      </ScrollAnimation>
+      
 
       {/* Statistics Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <ScrollAnimation animation="slideUp" delay={0}>
-          <StatWidget
+        
             title="À faire"
             value={tasksByStatus.pending.length}
             icon={<Clock className="w-6 h-6" />}
             color="primary"
             description="Tâches en attente"
           />
-        </ScrollAnimation>
-        <ScrollAnimation animation="slideUp" delay={100}>
-          <StatWidget
+        
+        
             title="En cours"
             value={tasksByStatus.in_progress.length}
             icon={<AlertCircle className="w-6 h-6" />}
             color="warning"
             description="Tâches en cours d'exécution"
           />
-        </ScrollAnimation>
-        <ScrollAnimation animation="slideUp" delay={200}>
-          <StatWidget
+        
+        
             title="Terminées"
             value={tasksByStatus.completed.length}
             icon={<CheckCircle2 className="w-6 h-6" />}
@@ -215,22 +196,20 @@ export default function TasksPage() {
             trend="up"
             trendValue={`${completionRate}%`}
           />
-        </ScrollAnimation>
-        <ScrollAnimation animation="slideUp" delay={300}>
-          <StatWidget
+        
+        
             title="Taux complétion"
             value={`${completionRate}%`}
             icon={<TrendingUp className="w-6 h-6" />}
             color="success"
             description="Progression globale"
           />
-        </ScrollAnimation>
+        
       </div>
 
       {/* Kanban Board */}
-      <ScrollAnimation animation="slideUp" delay={400}>
+      
         <div className="grid gap-4 overflow-x-auto lg:grid-cols-4">
-          <KanbanColumn
             title="À faire"
             status="pending"
             tasks={tasksByStatus.pending}
@@ -240,7 +219,6 @@ export default function TasksPage() {
             onDragOver={handleDragOver}
             onDrop={handleDragDrop}
           />
-          <KanbanColumn
             title="En cours"
             status="in_progress"
             tasks={tasksByStatus.in_progress}
@@ -250,7 +228,6 @@ export default function TasksPage() {
             onDragOver={handleDragOver}
             onDrop={handleDragDrop}
           />
-          <KanbanColumn
             title="Terminé"
             status="completed"
             tasks={tasksByStatus.completed}
@@ -260,7 +237,6 @@ export default function TasksPage() {
             onDragOver={handleDragOver}
             onDrop={handleDragDrop}
           />
-          <KanbanColumn
             title="Annulé"
             status="cancelled"
             tasks={tasksByStatus.cancelled}
@@ -271,10 +247,9 @@ export default function TasksPage() {
             onDrop={handleDragDrop}
           />
         </div>
-      </ScrollAnimation>
+      
 
       {/* Modal Ajout/Modification */}
-      <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={selectedTask ? 'Modifier la tâche' : 'Créer une tâche'}
@@ -297,7 +272,6 @@ export default function TasksPage() {
       </Modal>
 
       {/* Modal Confirmation suppression */}
-      <ConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
