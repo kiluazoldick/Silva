@@ -1,87 +1,154 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { createClient } from '@/lib/supabase/client'
-import { Users, CheckSquare, Clock, TrendingUp, ArrowRight, Calendar, AlertCircle } from 'lucide-react'
-import { format, formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { StatsCard } from "@/components/ui/StatsCard";
+import { ActivityChart } from "@/components/ui/ActivityChart";
+import { createClient } from "@/lib/supabase/client";
+import {
+  Users,
+  CheckSquare,
+  Clock,
+  TrendingUp,
+  ArrowRight,
+  Calendar,
+  AlertCircle,
+  Award,
+  Briefcase,
+  Activity,
+} from "lucide-react";
+import {
+  format,
+  formatDistanceToNow,
+  subDays,
+  eachDayOfInterval,
+} from "date-fns";
+import { fr } from "date-fns/locale";
 
-const supabase = createClient()
+const supabase = createClient();
 
 interface DashboardData {
-  companyName: string
+  companyName: string;
   stats: {
-    totalEmployees: number
-    activeEmployees: number
-    totalTasks: number
-    completedTasks: number
-    completionRate: number
-    presentToday: number
-  }
-  recentTasks: any[]
-  upcomingDeadlines: any[]
+    totalEmployees: number;
+    activeEmployees: number;
+    totalTasks: number;
+    completedTasks: number;
+    completionRate: number;
+    presentToday: number;
+    totalHoursThisMonth: number;
+  };
+  recentTasks: any[];
+  upcomingDeadlines: any[];
+  recentActivity: any[];
+  weeklyActivity: { date: string; count: number }[];
 }
 
 export default function DashboardPage() {
-  const [data, setData] = useState<DashboardData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [userName, setUserName] = useState('')
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
 
-      setUserName(user.email?.split('@')[0] || '')
+      setUserName(user.email?.split("@")[0] || "");
 
-      // Récupérer l'entreprise
       const { data: company } = await supabase
-        .from('companies')
-        .select('*')
-        .eq('owner_id', user.id)
-        .single()
+        .from("companies")
+        .select("*")
+        .eq("owner_id", user.id)
+        .single();
 
       if (!company) {
-        setLoading(false)
-        return
+        setLoading(false);
+        return;
       }
 
-      // Récupérer les employés
       const { data: employees } = await supabase
-        .from('employees')
-        .select('*')
-        .eq('company_id', company.id)
+        .from("employees")
+        .select("*")
+        .eq("company_id", company.id);
 
-      // Récupérer les tâches
       const { data: tasks } = await supabase
-        .from('tasks')
-        .select('*, employee:assigned_to(first_name, last_name)')
-        .eq('company_id', company.id)
-        .order('created_at', { ascending: false })
-        .limit(5)
+        .from("tasks")
+        .select("*, employee:assigned_to(first_name, last_name)")
+        .eq("company_id", company.id)
+        .order("created_at", { ascending: false });
 
-      // Récupérer les présences du jour
-      const today = new Date().toISOString().split('T')[0]
+      const today = new Date().toISOString().split("T")[0];
       const { count: presentToday } = await supabase
-        .from('attendance')
-        .select('*', { count: 'exact', head: true })
-        .eq('date', today)
+        .from("attendance")
+        .select("*", { count: "exact", head: true })
+        .eq("date", today);
 
-      // Tâches avec échéances proches
-      const upcoming = tasks?.filter(t => 
-        t.due_date && 
-        t.status !== 'completed' &&
-        new Date(t.due_date) > new Date()
-      ).slice(0, 5)
+      const firstDayOfMonth = new Date();
+      firstDayOfMonth.setDate(1);
+      const { data: monthlyAttendance } = await supabase
+        .from("attendance")
+        .select("hours_worked")
+        .gte("date", firstDayOfMonth.toISOString().split("T")[0]);
 
-      const totalEmployees = employees?.length || 0
-      const activeEmployees = employees?.filter(e => e.status === 'active').length || 0
-      const totalTasks = tasks?.length || 0
-      const completedTasks = tasks?.filter(t => t.status === 'completed').length || 0
-      const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0
+      const totalHoursThisMonth =
+        monthlyAttendance?.reduce((sum, a) => sum + (a.hours_worked || 0), 0) ||
+        0;
+
+      const upcoming = tasks
+        ?.filter(
+          (t) =>
+            t.due_date &&
+            t.status !== "completed" &&
+            new Date(t.due_date) > new Date(),
+        )
+        .slice(0, 5);
+
+      const recentTasksCompleted =
+        tasks?.filter((t) => t.status === "completed").slice(0, 3) || [];
+      const recentEmployees = employees?.slice(0, 2) || [];
+
+      const recentActivity = [
+        ...recentTasksCompleted.map((t) => ({
+          type: "task",
+          title: `Tâche terminée : ${t.title}`,
+          date: t.updated_at,
+        })),
+        ...recentEmployees.map((e) => ({
+          type: "employee",
+          title: `${e.first_name} ${e.last_name} a rejoint l'équipe`,
+          date: e.created_at,
+        })),
+      ]
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 5);
+
+      const last7Days = eachDayOfInterval({
+        start: subDays(new Date(), 6),
+        end: new Date(),
+      });
+      const weeklyActivity = last7Days.map((day) => {
+        const dayStr = format(day, "yyyy-MM-dd");
+        const dayTasks =
+          tasks?.filter((t) => t.created_at?.startsWith(dayStr)) || [];
+        return {
+          date: format(day, "EEE", { locale: fr }),
+          count: dayTasks.length,
+        };
+      });
+
+      const totalEmployees = employees?.length || 0;
+      const activeEmployees =
+        employees?.filter((e) => e.status === "active").length || 0;
+      const totalTasks = tasks?.length || 0;
+      const completedTasks =
+        tasks?.filter((t) => t.status === "completed").length || 0;
+      const completionRate =
+        totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
       setData({
         companyName: company.name,
@@ -91,169 +158,206 @@ export default function DashboardPage() {
           totalTasks,
           completedTasks,
           completionRate: Math.round(completionRate),
-          presentToday: presentToday || 0
+          presentToday: presentToday || 0,
+          totalHoursThisMonth: Math.round(totalHoursThisMonth),
         },
-        recentTasks: tasks || [],
-        upcomingDeadlines: upcoming || []
-      })
-      setLoading(false)
-    }
+        recentTasks: (tasks || []).slice(0, 5),
+        upcomingDeadlines: upcoming || [],
+        recentActivity,
+        weeklyActivity,
+      });
+      setLoading(false);
+    };
 
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#2C4A6E] border-t-transparent mx-auto mb-4" />
+          <p className="text-sm text-gray-500">Chargement...</p>
+        </div>
       </div>
-    )
+    );
   }
 
   if (!data) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full items-center justify-center p-6">
         <Card>
-          <div className="text-center py-8">
+          <div className="text-center py-12">
+            <Briefcase className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Bienvenue sur Silva! 👋
+              Bienvenue sur Silva ! 👋
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-500 mb-6">
               Commencez par créer votre entreprise
             </p>
             <Link href="/company-setup">
-              <Button>Créer mon entreprise</Button>
+              <Button className="bg-[#2C4A6E] hover:bg-[#1E3A5F]">
+                Créer mon entreprise
+              </Button>
             </Link>
           </div>
         </Card>
       </div>
-    )
+    );
   }
-
-  const statsCards = [
-    {
-      title: 'Employés',
-      value: data.stats.totalEmployees,
-      subValue: `${data.stats.activeEmployees} actifs`,
-      icon: Users,
-      color: 'bg-blue-500',
-      link: '/employees'
-    },
-    {
-      title: 'Tâches complétées',
-      value: `${data.stats.completionRate}%`,
-      subValue: `${data.stats.completedTasks}/${data.stats.totalTasks} tâches`,
-      icon: CheckSquare,
-      color: 'bg-green-500',
-      link: '/tasks'
-    },
-    {
-      title: 'Présents aujourd\'hui',
-      value: data.stats.presentToday,
-      subValue: `sur ${data.stats.totalEmployees} employés`,
-      icon: Clock,
-      color: 'bg-purple-500',
-      link: '/attendance'
-    },
-    {
-      title: 'Performance',
-      value: `${data.stats.completionRate}%`,
-      subValue: 'taux de complétion',
-      icon: TrendingUp,
-      color: 'bg-orange-500',
-      link: '/statistics'
-    }
-  ]
 
   return (
     <div className="space-y-6">
-      {/* Bienvenue */}
-      <div className="rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
-        <h1 className="text-2xl font-bold">
-          Bonjour {userName} 👋
-        </h1>
-        <p className="mt-1 text-blue-100">
-          Bienvenue sur {data.companyName}
-        </p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            Bonjour, {userName} 👋
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Voici ce qui se passe dans {data.companyName}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-gray-400">
+          <Calendar className="h-4 w-4" />
+          <span>{format(new Date(), "EEEE d MMMM yyyy", { locale: fr })}</span>
+        </div>
       </div>
 
-      {/* Statistiques */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {statsCards.map((stat, index) => {
-          const Icon = stat.icon
-          return (
-            <Link href={stat.link} key={index}>
-              <Card className="cursor-pointer transition-all hover:shadow-md">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                    <p className="mt-2 text-3xl font-bold text-gray-900">{stat.value}</p>
-                    <p className="mt-1 text-sm text-gray-500">{stat.subValue}</p>
-                  </div>
-                  <div className={`rounded-full ${stat.color} p-3`}>
-                    <Icon className="h-6 w-6 text-white" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm text-blue-600">
-                  <span>Voir détails</span>
-                  <ArrowRight className="ml-1 h-4 w-4" />
-                </div>
-              </Card>
-            </Link>
-          )
-        })}
+      {/* Stats Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatsCard
+          title="Employés"
+          value={data.stats.totalEmployees}
+          subValue={`${data.stats.activeEmployees} actifs`}
+          icon={Users}
+          trend={{ value: 12, isPositive: true }}
+          link="/employees"
+        />
+        <StatsCard
+          title="Tâches complétées"
+          value={`${data.stats.completionRate}%`}
+          subValue={`${data.stats.completedTasks}/${data.stats.totalTasks}`}
+          icon={CheckSquare}
+          trend={{
+            value: data.stats.completionRate > 50 ? 8 : -5,
+            isPositive: data.stats.completionRate > 50,
+          }}
+          link="/tasks"
+        />
+        <StatsCard
+          title="Présents aujourd'hui"
+          value={data.stats.presentToday}
+          subValue={`sur ${data.stats.totalEmployees} employés`}
+          icon={Clock}
+          link="/attendance"
+        />
+        <StatsCard
+          title="Heures travaillées"
+          value={`${data.stats.totalHoursThisMonth}h`}
+          subValue="ce mois-ci"
+          icon={TrendingUp}
+          trend={{ value: 5, isPositive: true }}
+          link="/statistics"
+        />
       </div>
 
-      {/* Tâches récentes et échéances */}
+      {/* Graphique activité */}
+      <ActivityChart data={data.weeklyActivity} />
+
+      {/* Deux colonnes */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card title="Tâches récentes">
+        {/* Tâches récentes */}
+        <Card>
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-base font-semibold text-gray-900">
+              Tâches récentes
+            </h3>
+            <Link
+              href="/tasks"
+              className="text-xs text-[#2C4A6E] hover:underline"
+            >
+              Voir tout
+            </Link>
+          </div>
           <div className="space-y-3">
             {data.recentTasks.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">Aucune tâche récente</p>
+              <div className="py-8 text-center">
+                <CheckSquare className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-400">Aucune tâche</p>
+              </div>
             ) : (
               data.recentTasks.map((task) => (
-                <div key={task.id} className="flex items-center justify-between rounded-lg border p-3">
-                  <div>
-                    <p className="font-medium text-gray-900">{task.title}</p>
-                    <p className="text-sm text-gray-500">
-                      Assigné à {task.employee?.first_name} {task.employee?.last_name}
+                <div
+                  key={task.id}
+                  className="flex items-center justify-between rounded-lg border border-gray-100 p-3 transition hover:border-gray-200"
+                >
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      {task.title}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Assignée à {task.employee?.first_name}{" "}
+                      {task.employee?.last_name}
                     </p>
                   </div>
-                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    task.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {task.status === 'completed' ? 'Terminé' :
-                     task.status === 'in_progress' ? 'En cours' : 'En attente'}
+                  <div
+                    className={`ml-2 rounded-full px-2 py-0.5 text-xs font-medium ${
+                      task.status === "completed"
+                        ? "bg-green-50 text-green-700"
+                        : task.status === "in_progress"
+                          ? "bg-blue-50 text-blue-700"
+                          : "bg-gray-50 text-gray-500"
+                    }`}
+                  >
+                    {task.status === "completed"
+                      ? "Terminé"
+                      : task.status === "in_progress"
+                        ? "En cours"
+                        : "À faire"}
                   </div>
                 </div>
               ))
             )}
-            {data.recentTasks.length > 0 && (
-              <Link href="/tasks">
-                <Button variant="outline" className="w-full mt-2">
-                  Voir toutes les tâches
-                </Button>
-              </Link>
-            )}
           </div>
         </Card>
 
-        <Card title="Échéances à venir">
+        {/* Activité récente */}
+        <Card>
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-base font-semibold text-gray-900">
+              Activité récente
+            </h3>
+            <Award className="h-4 w-4 text-gray-400" />
+          </div>
           <div className="space-y-3">
-            {data.upcomingDeadlines.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">Aucune échéance imminente</p>
+            {data.recentActivity.length === 0 ? (
+              <div className="py-8 text-center">
+                <Activity className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-400">Aucune activité récente</p>
+              </div>
             ) : (
-              data.upcomingDeadlines.map((task) => (
-                <div key={task.id} className="flex items-center justify-between rounded-lg border p-3">
-                  <div>
-                    <p className="font-medium text-gray-900">{task.title}</p>
-                    <p className="text-sm text-gray-500">
-                      Due dans {formatDistanceToNow(new Date(task.due_date), { locale: fr, addSuffix: true })}
+              data.recentActivity.map((activity, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-3 rounded-lg border border-gray-100 p-3"
+                >
+                  <div className="rounded-full bg-gray-50 p-1.5">
+                    {activity.type === "task" ? (
+                      <CheckSquare className="h-3 w-3 text-gray-500" />
+                    ) : (
+                      <Users className="h-3 w-3 text-gray-500" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-700">{activity.title}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {formatDistanceToNow(new Date(activity.date), {
+                        locale: fr,
+                        addSuffix: true,
+                      })}
                     </p>
                   </div>
-                  <Calendar className="h-5 w-5 text-gray-400" />
                 </div>
               ))
             )}
@@ -261,27 +365,96 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Actions rapides */}
-      <Card>
-        <h3 className="mb-4 text-lg font-semibold text-gray-900">Actions rapides</h3>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Link href="/employees/new">
-            <Button variant="outline" className="w-full">
-              + Ajouter un employé
-            </Button>
-          </Link>
-          <Link href="/tasks/new">
-            <Button variant="outline" className="w-full">
-              + Créer une tâche
-            </Button>
-          </Link>
-          <Link href="/attendance">
-            <Button variant="outline" className="w-full">
-              ⏱️ Pointer
-            </Button>
-          </Link>
-        </div>
-      </Card>
+      {/* Échéances et actions */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Échéances */}
+        <Card>
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-base font-semibold text-gray-900">
+              Échéances à venir
+            </h3>
+            <Calendar className="h-4 w-4 text-gray-400" />
+          </div>
+          <div className="space-y-3">
+            {data.upcomingDeadlines.length === 0 ? (
+              <div className="py-8 text-center">
+                <Calendar className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-400">Aucune échéance</p>
+              </div>
+            ) : (
+              data.upcomingDeadlines.map((task) => (
+                <div
+                  key={task.id}
+                  className="flex items-center justify-between rounded-lg border border-gray-100 p-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {task.title}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Due{" "}
+                      {formatDistanceToNow(new Date(task.due_date), {
+                        locale: fr,
+                        addSuffix: true,
+                      })}
+                    </p>
+                  </div>
+                  {new Date(task.due_date) < new Date() ? (
+                    <AlertCircle className="h-4 w-4 text-red-400" />
+                  ) : (
+                    <Calendar className="h-4 w-4 text-gray-300" />
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
+
+        {/* Actions rapides */}
+        <Card>
+          <h3 className="mb-4 text-base font-semibold text-gray-900">
+            Actions rapides
+          </h3>
+          <div className="flex flex-col gap-2">
+            <Link href="/employees">
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2 text-sm font-normal"
+              >
+                <Users className="h-4 w-4" />
+                Ajouter un employé
+              </Button>
+            </Link>
+            <Link href="/tasks">
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2 text-sm font-normal"
+              >
+                <CheckSquare className="h-4 w-4" />
+                Créer une tâche
+              </Button>
+            </Link>
+            <Link href="/attendance">
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2 text-sm font-normal"
+              >
+                <Clock className="h-4 w-4" />
+                Enregistrer une présence
+              </Button>
+            </Link>
+            <Link href="/statistics">
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2 text-sm font-normal"
+              >
+                <TrendingUp className="h-4 w-4" />
+                Voir les statistiques
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </div>
     </div>
-  )
+  );
 }
