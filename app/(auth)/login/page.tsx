@@ -8,8 +8,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { GlassmorphismForm } from '@/components/ui/GlassmorphismForm'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { Mail, Lock } from 'lucide-react'
 
 const loginSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -49,40 +51,42 @@ export default function LoginPage() {
   }
 
   const handleGoogleLogin = async () => {
-  setGoogleLoading(true)
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
-    },
-  })
+    setGoogleLoading(true)
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
 
-  if (error) {
-    toast.error(error.message)
-    setGoogleLoading(false)
+    if (error) {
+      toast.error(error.message)
+      setGoogleLoading(false)
+    }
   }
-  // Pas besoin de setGoogleLoading(false) ici car la page va se recharger
-}
 
   return (
-    <div className="rounded-2xl bg-white p-8 shadow-xl">
-      <div className="mb-8 text-center">
+    <GlassmorphismForm
+      title="Connexion"
+      description="Connectez-vous à votre compte Silva"
+    >
+      {/* Logo */}
+      <div className="mb-6 text-center lg:hidden">
         <Link href="/">
-          <h1 className="text-3xl font-bold text-gray-900">Silva</h1>
+          <h1 className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">Silva</h1>
         </Link>
-        <p className="mt-2 text-gray-600">Connectez-vous à votre compte</p>
       </div>
 
-      {/* Bouton Google */}
+      {/* Google Button */}
       <button
         onClick={handleGoogleLogin}
         disabled={googleLoading}
-        className="mb-6 flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-all hover:bg-gray-50 hover:shadow-md disabled:opacity-50"
+        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card hover:bg-muted transition-colors font-medium text-foreground disabled:opacity-50"
       >
         {googleLoading ? (
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         ) : (
-          <svg className="h-5 w-5" viewBox="0 0 24 24">
+          <svg className="h-4 w-4" viewBox="0 0 24 24">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
               fill="#4285F4"
@@ -101,46 +105,72 @@ export default function LoginPage() {
             />
           </svg>
         )}
-        <span>{googleLoading ? 'Connexion...' : 'Continuer avec Google'}</span>
+        <span className="text-sm">{googleLoading ? 'Connexion...' : 'Continuer avec Google'}</span>
       </button>
 
-      {/* Séparateur */}
-      <div className="relative mb-6">
+      {/* Separator */}
+      <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300"></div>
+          <div className="w-full border-t border-border"></div>
         </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="bg-white px-2 text-gray-500">ou</span>
+        <div className="relative flex justify-center text-xs">
+          <span className="px-2 bg-background text-muted-foreground">ou</span>
         </div>
       </div>
 
-      {/* Formulaire email/password */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-black">
+      {/* Email */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground flex items-center gap-2">
+          <Mail className="w-4 h-4 text-primary" />
+          Email
+        </label>
         <Input
-          label="Email"
           type="email"
           placeholder="vous@exemple.com"
           {...register('email')}
           error={errors.email?.message}
+          className="rounded-lg"
         />
+      </div>
+
+      {/* Password */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground flex items-center gap-2">
+          <Lock className="w-4 h-4 text-primary" />
+          Mot de passe
+        </label>
         <Input
-          label="Mot de passe"
           type="password"
           placeholder="••••••••"
           {...register('password')}
           error={errors.password?.message}
+          className="rounded-lg"
         />
-        <Button type="submit" className="w-full" loading={loading}>
-          Se connecter
-        </Button>
-      </form>
+      </div>
 
-      <p className="mt-6 text-center text-sm text-gray-600">
+      {/* Remember & Forgot */}
+      <div className="flex items-center justify-between text-sm">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" className="rounded" />
+          <span className="text-muted-foreground">Se souvenir de moi</span>
+        </label>
+        <Link href="#" className="text-primary hover:underline font-medium">
+          Mot de passe oublié?
+        </Link>
+      </div>
+
+      {/* Submit */}
+      <Button type="submit" onClick={handleSubmit(onSubmit)} className="w-full" loading={loading}>
+        Se connecter
+      </Button>
+
+      {/* Sign up link */}
+      <p className="text-center text-sm text-muted-foreground">
         Pas encore de compte?{' '}
-        <Link href="/register" className="font-semibold text-blue-600 hover:underline">
+        <Link href="/register" className="font-semibold text-primary hover:underline">
           S'inscrire
         </Link>
       </p>
-    </div>
+    </GlassmorphismForm>
   )
 }

@@ -5,14 +5,16 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
+import { ScrollAnimation } from '@/components/ui/ScrollAnimation'
 import { KanbanColumn } from '@/components/tasks/KanbanColumn'
 import { TaskForm } from '@/components/tasks/TaskForm'
+import { StatWidget } from '@/components/dashboard/StatWidget'
 import { useTaskStore } from '@/lib/store/taskStore'
 import { useEmployeeStore } from '@/lib/store/employeeStore'
 import { useCompanyStore } from '@/lib/store/companyStore'
 import { createClient } from '@/lib/supabase/client'
 import { Task } from '@/types'
-import { Plus, LayoutGrid } from 'lucide-react'
+import { Plus, CheckCircle2, Clock, AlertCircle, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 
 const supabase = createClient()
@@ -161,89 +163,115 @@ export default function TasksPage() {
     cancelled: tasks.filter(t => t.status === 'cancelled')
   }
 
+  const completionRate = tasks.length > 0 
+    ? Math.round((tasksByStatus.completed.length / tasks.length) * 100)
+    : 0
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tâches</h1>
-          <p className="text-gray-600">
-            Gérez toutes les tâches de votre équipe
-          </p>
+      <ScrollAnimation animation="slideDown">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Tâches</h1>
+            <p className="text-muted-foreground mt-1">
+              Gérez toutes les tâches de votre équipe
+            </p>
+          </div>
+          <Button onClick={handleAdd} className="gap-2 w-full sm:w-auto">
+            <Plus className="h-4 w-4" />
+            Nouvelle tâche
+          </Button>
         </div>
-        <Button onClick={handleAdd} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nouvelle tâche
-        </Button>
-      </div>
+      </ScrollAnimation>
 
-      {/* Statistiques rapides */}
+      {/* Statistics Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg bg-white p-4 shadow-sm">
-          <p className="text-sm text-gray-600">À faire</p>
-          <p className="text-2xl font-bold text-gray-900">{tasksByStatus.pending.length}</p>
-        </div>
-        <div className="rounded-lg bg-white p-4 shadow-sm">
-          <p className="text-sm text-gray-600">En cours</p>
-          <p className="text-2xl font-bold text-blue-600">{tasksByStatus.in_progress.length}</p>
-        </div>
-        <div className="rounded-lg bg-white p-4 shadow-sm">
-          <p className="text-sm text-gray-600">Terminées</p>
-          <p className="text-2xl font-bold text-green-600">{tasksByStatus.completed.length}</p>
-        </div>
-        <div className="rounded-lg bg-white p-4 shadow-sm">
-          <p className="text-sm text-gray-600">Taux complétion</p>
-          <p className="text-2xl font-bold text-purple-600">
-            {tasks.length > 0 
-              ? Math.round((tasksByStatus.completed.length / tasks.length) * 100)
-              : 0}%
-          </p>
-        </div>
+        <ScrollAnimation animation="slideUp" delay={0}>
+          <StatWidget
+            title="À faire"
+            value={tasksByStatus.pending.length}
+            icon={<Clock className="w-6 h-6" />}
+            color="primary"
+            description="Tâches en attente"
+          />
+        </ScrollAnimation>
+        <ScrollAnimation animation="slideUp" delay={100}>
+          <StatWidget
+            title="En cours"
+            value={tasksByStatus.in_progress.length}
+            icon={<AlertCircle className="w-6 h-6" />}
+            color="warning"
+            description="Tâches en cours d'exécution"
+          />
+        </ScrollAnimation>
+        <ScrollAnimation animation="slideUp" delay={200}>
+          <StatWidget
+            title="Terminées"
+            value={tasksByStatus.completed.length}
+            icon={<CheckCircle2 className="w-6 h-6" />}
+            color="success"
+            description="Tâches complétées"
+            trend="up"
+            trendValue={`${completionRate}%`}
+          />
+        </ScrollAnimation>
+        <ScrollAnimation animation="slideUp" delay={300}>
+          <StatWidget
+            title="Taux complétion"
+            value={`${completionRate}%`}
+            icon={<TrendingUp className="w-6 h-6" />}
+            color="success"
+            description="Progression globale"
+          />
+        </ScrollAnimation>
       </div>
 
-      {/* Vue Kanban */}
-      <div className="grid gap-4 overflow-x-auto lg:grid-cols-4">
-        <KanbanColumn
-          title="À faire"
-          status="pending"
-          tasks={tasksByStatus.pending}
-          employees={employees}
-          onTaskEdit={handleEdit}
-          onTaskDelete={handleDelete}
-          onDragOver={handleDragOver}
-          onDrop={handleDragDrop}
-        />
-        <KanbanColumn
-          title="En cours"
-          status="in_progress"
-          tasks={tasksByStatus.in_progress}
-          employees={employees}
-          onTaskEdit={handleEdit}
-          onTaskDelete={handleDelete}
-          onDragOver={handleDragOver}
-          onDrop={handleDragDrop}
-        />
-        <KanbanColumn
-          title="Terminé"
-          status="completed"
-          tasks={tasksByStatus.completed}
-          employees={employees}
-          onTaskEdit={handleEdit}
-          onTaskDelete={handleDelete}
-          onDragOver={handleDragOver}
-          onDrop={handleDragDrop}
-        />
-        <KanbanColumn
-          title="Annulé"
-          status="cancelled"
-          tasks={tasksByStatus.cancelled}
-          employees={employees}
-          onTaskEdit={handleEdit}
-          onTaskDelete={handleDelete}
-          onDragOver={handleDragOver}
-          onDrop={handleDragDrop}
-        />
-      </div>
+      {/* Kanban Board */}
+      <ScrollAnimation animation="slideUp" delay={400}>
+        <div className="grid gap-4 overflow-x-auto lg:grid-cols-4">
+          <KanbanColumn
+            title="À faire"
+            status="pending"
+            tasks={tasksByStatus.pending}
+            employees={employees}
+            onTaskEdit={handleEdit}
+            onTaskDelete={handleDelete}
+            onDragOver={handleDragOver}
+            onDrop={handleDragDrop}
+          />
+          <KanbanColumn
+            title="En cours"
+            status="in_progress"
+            tasks={tasksByStatus.in_progress}
+            employees={employees}
+            onTaskEdit={handleEdit}
+            onTaskDelete={handleDelete}
+            onDragOver={handleDragOver}
+            onDrop={handleDragDrop}
+          />
+          <KanbanColumn
+            title="Terminé"
+            status="completed"
+            tasks={tasksByStatus.completed}
+            employees={employees}
+            onTaskEdit={handleEdit}
+            onTaskDelete={handleDelete}
+            onDragOver={handleDragOver}
+            onDrop={handleDragDrop}
+          />
+          <KanbanColumn
+            title="Annulé"
+            status="cancelled"
+            tasks={tasksByStatus.cancelled}
+            employees={employees}
+            onTaskEdit={handleEdit}
+            onTaskDelete={handleDelete}
+            onDragOver={handleDragOver}
+            onDrop={handleDragDrop}
+          />
+        </div>
+      </ScrollAnimation>
 
       {/* Modal Ajout/Modification */}
       <Modal

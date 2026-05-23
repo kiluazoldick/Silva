@@ -6,13 +6,15 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
+import { ScrollAnimation } from '@/components/ui/ScrollAnimation'
 import { EmployeeList } from '@/components/employees/EmployeeList'
 import { EmployeeForm } from '@/components/employees/EmployeeForm'
+import { StatWidget } from '@/components/dashboard/StatWidget'
 import { useEmployeeStore } from '@/lib/store/employeeStore'
 import { useCompanyStore } from '@/lib/store/companyStore'
 import { createClient } from '@/lib/supabase/client'
 import { Employee } from '@/types'
-import { Plus, Users as UsersIcon } from 'lucide-react'
+import { Plus, Users as UsersIcon, CheckCircle2, AlertCircle, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 
 const supabase = createClient()
@@ -133,77 +135,87 @@ export default function EmployeesPage() {
     )
   }
 
+  const activeCount = employees.filter(e => e.status === 'active').length
+  const onLeaveCount = employees.filter(e => e.status === 'on_leave').length
+  const inactiveCount = employees.filter(e => e.status === 'inactive').length
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Employés</h1>
-          <p className="text-gray-600">
-            Gérez tous les employés de votre entreprise
-          </p>
+      <ScrollAnimation animation="slideDown">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Employés</h1>
+            <p className="text-muted-foreground mt-1">
+              Gérez tous les employés de votre entreprise
+            </p>
+          </div>
+          <Button onClick={handleAdd} className="gap-2 w-full sm:w-auto">
+            <Plus className="h-4 w-4" />
+            Ajouter un employé
+          </Button>
         </div>
-        <Button onClick={handleAdd} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Ajouter un employé
-        </Button>
-      </div>
+      </ScrollAnimation>
 
-      {/* Stats rapides */}
+      {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total employés</p>
-              <p className="text-2xl font-bold text-gray-900">{employees.length}</p>
-            </div>
-            <UsersIcon className="h-8 w-8 text-blue-500" />
-          </div>
-        </Card>
-        <Card>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Actifs</p>
-              <p className="text-2xl font-bold text-green-600">
-                {employees.filter(e => e.status === 'active').length}
-              </p>
-            </div>
-            <UsersIcon className="h-8 w-8 text-green-500" />
-          </div>
-        </Card>
-        <Card>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">En congé</p>
-              <p className="text-2xl font-bold text-yellow-600">
-                {employees.filter(e => e.status === 'on_leave').length}
-              </p>
-            </div>
-            <UsersIcon className="h-8 w-8 text-yellow-500" />
-          </div>
-        </Card>
-        <Card>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Inactifs</p>
-              <p className="text-2xl font-bold text-red-600">
-                {employees.filter(e => e.status === 'inactive').length}
-              </p>
-            </div>
-            <UsersIcon className="h-8 w-8 text-red-500" />
-          </div>
-        </Card>
+        <ScrollAnimation animation="slideUp" delay={0}>
+          <StatWidget
+            title="Total employés"
+            value={employees.length}
+            icon={<UsersIcon className="w-6 h-6" />}
+            color="primary"
+            description="Tous les membres de l'équipe"
+          />
+        </ScrollAnimation>
+        <ScrollAnimation animation="slideUp" delay={100}>
+          <StatWidget
+            title="Actifs"
+            value={activeCount}
+            icon={<CheckCircle2 className="w-6 h-6" />}
+            color="success"
+            description="Employés actifs en ce moment"
+            trend="up"
+            trendValue={`${Math.round((activeCount / Math.max(employees.length, 1)) * 100)}%`}
+          />
+        </ScrollAnimation>
+        <ScrollAnimation animation="slideUp" delay={200}>
+          <StatWidget
+            title="En congé"
+            value={onLeaveCount}
+            icon={<Clock className="w-6 h-6" />}
+            color="warning"
+            description="Employés en congé"
+          />
+        </ScrollAnimation>
+        <ScrollAnimation animation="slideUp" delay={300}>
+          <StatWidget
+            title="Inactifs"
+            value={inactiveCount}
+            icon={<AlertCircle className="w-6 h-6" />}
+            color="error"
+            description="Employés inactifs"
+          />
+        </ScrollAnimation>
       </div>
 
-      {/* Liste des employés */}
-      <Card>
-        <EmployeeList
-          employees={employees}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          loading={loading}
-        />
-      </Card>
+      {/* Employee List */}
+      <ScrollAnimation animation="slideUp" delay={400}>
+        <Card className="border-primary/10">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-foreground">Liste des employés</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              {employees.length} employé{employees.length !== 1 ? 's' : ''} enregistré{employees.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+          <EmployeeList
+            employees={employees}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            loading={loading}
+          />
+        </Card>
+      </ScrollAnimation>
 
       {/* Modal Ajout/Modification */}
       <Modal

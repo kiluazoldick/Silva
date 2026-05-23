@@ -1,9 +1,13 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { DarkModeToggle } from '@/components/ui/DarkModeToggle'
+import { SearchBar } from '@/components/ui/SearchBar'
 import { 
   LayoutDashboard, 
   Users, 
@@ -13,9 +17,12 @@ import {
   Building2,
   LogOut,
   Menu,
-  X
+  X,
+  Bell,
+  ChevronDown
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { AvatarGenerator } from '@/components/ui/AvatarGenerator'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -129,22 +136,22 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:relative lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-background border-r border-border shadow-lg transition-transform duration-300 lg:relative lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex h-16 items-center justify-between border-b px-6">
+          <div className="flex h-16 items-center justify-between border-b border-border px-6">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-blue-600"></div>
-              <span className="text-xl font-bold text-gray-900">Silva</span>
+              <div className="h-8 w-8 rounded-lg bg-gradient-primary"></div>
+              <span className="text-xl font-bold gradient-primary bg-clip-text text-transparent">Silva</span>
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden"
+              className="lg:hidden p-1 hover:bg-muted rounded transition-colors"
             >
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5" />
             </button>
           </div>
 
@@ -152,11 +159,16 @@ export default function DashboardLayout({
           <nav className="flex-1 space-y-1 px-3 py-4">
             {navigation.map((item) => {
               const Icon = item.icon
+              const isActive = pathname === item.href
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-700 transition-colors hover:bg-gray-100"
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
+                    isActive
+                      ? 'bg-primary/10 text-primary font-medium'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
                 >
                   <Icon className="h-5 w-5" />
                   <span>{item.name}</span>
@@ -166,18 +178,14 @@ export default function DashboardLayout({
           </nav>
 
           {/* User info */}
-          <div className="border-t p-4">
+          <div className="border-t border-border p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                <span className="text-sm font-semibold text-blue-600">
-                  {user?.email?.[0].toUpperCase()}
-                </span>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">
+              <AvatarGenerator name={user?.email || ''} size="md" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">
                   {user?.email?.split('@')[0]}
                 </p>
-                <p className="truncate text-xs text-gray-500">
+                <p className="truncate text-xs text-muted-foreground">
                   {company?.name || 'Créer une entreprise'}
                 </p>
               </div>
@@ -185,7 +193,7 @@ export default function DashboardLayout({
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
-                className="p-2"
+                className="p-2 hover:bg-muted"
               >
                 <LogOut className="h-4 w-4" />
               </Button>
@@ -195,25 +203,41 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto bg-background">
         {/* Header */}
-        <header className="sticky top-0 z-10 bg-white shadow-sm">
-          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
+        <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
+          <div className="flex h-16 items-center justify-between px-4 sm:px-6 gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="rounded-lg p-2 hover:bg-gray-100 lg:hidden"
+              className="rounded-lg p-2 hover:bg-muted lg:hidden"
             >
               <Menu className="h-6 w-6" />
             </button>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
+            
+            <div className="hidden md:flex flex-1 max-w-xs">
+              <SearchBar placeholder="Chercher..." />
+            </div>
+            
+            <div className="flex items-center gap-3 ml-auto">
+              <span className="hidden sm:text-xs text-muted-foreground">
                 {new Date().toLocaleDateString('fr-FR', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
+                  weekday: 'short',
+                  month: 'short',
                   day: 'numeric',
                 })}
               </span>
+              
+              <button className="relative p-2 hover:bg-muted rounded-lg transition-colors">
+                <Bell className="h-5 w-5 text-muted-foreground" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+              </button>
+              
+              <DarkModeToggle />
+              
+              <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-muted transition-colors">
+                <AvatarGenerator name={user?.email || ''} size="sm" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </button>
             </div>
           </div>
         </header>

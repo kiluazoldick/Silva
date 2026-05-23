@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { ScrollAnimation } from '@/components/ui/ScrollAnimation'
+import { ProgressBar } from '@/components/ui/ProgressBar'
 import { createClient } from '@/lib/supabase/client'
-import { Users, CheckSquare, Clock, TrendingUp, ArrowRight, Calendar, AlertCircle } from 'lucide-react'
+import { Users, CheckSquare, Clock, TrendingUp, ArrowRight, Calendar, AlertCircle, Zap, Target } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -112,20 +114,27 @@ export default function DashboardPage() {
 
   if (!data) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Card>
-          <div className="text-center py-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Bienvenue sur Silva! 👋
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Commencez par créer votre entreprise
-            </p>
-            <Link href="/company-setup">
-              <Button>Créer mon entreprise</Button>
-            </Link>
-          </div>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <ScrollAnimation animation="slideUp">
+          <Card className="max-w-md w-full border-primary/20 bg-gradient-primary-subtle">
+            <div className="text-center py-12">
+              <div className="inline-flex p-4 rounded-full bg-primary/20 mb-6">
+                <Zap className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-3">
+                Bienvenue sur Silva! 👋
+              </h3>
+              <p className="text-muted-foreground mb-8">
+                Commencez par créer votre entreprise pour accéder à toutes les fonctionnalités
+              </p>
+              <Link href="/company-setup" className="w-full block">
+                <Button className="w-full">
+                  Créer mon entreprise
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        </ScrollAnimation>
       </div>
     )
   }
@@ -166,122 +175,163 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      {/* Bienvenue */}
-      <div className="rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
-        <h1 className="text-2xl font-bold">
-          Bonjour {userName} 👋
-        </h1>
-        <p className="mt-1 text-blue-100">
-          Bienvenue sur {data.companyName}
-        </p>
-      </div>
+    <div className="space-y-8">
+      {/* Welcome Banner */}
+      <ScrollAnimation animation="slideDown">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-primary p-8 text-white">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+          </div>
+          <div className="relative z-10">
+            <h1 className="text-3xl font-bold mb-2">
+              Bonjour {userName} 👋
+            </h1>
+            <p className="text-white/80 text-lg">
+              Bienvenue sur <strong>{data.companyName}</strong>
+            </p>
+          </div>
+        </div>
+      </ScrollAnimation>
 
-      {/* Statistiques */}
+      {/* Stats Cards */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {statsCards.map((stat, index) => {
           const Icon = stat.icon
           return (
-            <Link href={stat.link} key={index}>
-              <Card className="cursor-pointer transition-all hover:shadow-md">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                    <p className="mt-2 text-3xl font-bold text-gray-900">{stat.value}</p>
-                    <p className="mt-1 text-sm text-gray-500">{stat.subValue}</p>
+            <ScrollAnimation
+              key={index}
+              animation="slideUp"
+              delay={index * 100}
+            >
+              <Link href={stat.link}>
+                <Card className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/30 h-full group">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                      <p className="mt-3 text-4xl font-bold text-foreground">{stat.value}</p>
+                      <p className="mt-2 text-xs text-muted-foreground">{stat.subValue}</p>
+                    </div>
+                    <div className={`rounded-lg ${stat.color} p-3 text-white group-hover:scale-110 transition-transform`}>
+                      <Icon className="h-6 w-6" />
+                    </div>
                   </div>
-                  <div className={`rounded-full ${stat.color} p-3`}>
-                    <Icon className="h-6 w-6 text-white" />
+                  <div className="flex items-center text-xs text-primary gap-1 pt-4 border-t border-border group-hover:gap-2 transition-all">
+                    <span>Voir détails</span>
+                    <ArrowRight className="h-3 w-3" />
                   </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm text-blue-600">
-                  <span>Voir détails</span>
-                  <ArrowRight className="ml-1 h-4 w-4" />
-                </div>
-              </Card>
-            </Link>
+                </Card>
+              </Link>
+            </ScrollAnimation>
           )
         })}
       </div>
 
-      {/* Tâches récentes et échéances */}
+      {/* Tasks & Deadlines */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card title="Tâches récentes">
-          <div className="space-y-3">
-            {data.recentTasks.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">Aucune tâche récente</p>
-            ) : (
-              data.recentTasks.map((task) => (
-                <div key={task.id} className="flex items-center justify-between rounded-lg border p-3">
-                  <div>
-                    <p className="font-medium text-gray-900">{task.title}</p>
-                    <p className="text-sm text-gray-500">
-                      Assigné à {task.employee?.first_name} {task.employee?.last_name}
-                    </p>
-                  </div>
-                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    task.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {task.status === 'completed' ? 'Terminé' :
-                     task.status === 'in_progress' ? 'En cours' : 'En attente'}
-                  </div>
-                </div>
-              ))
-            )}
-            {data.recentTasks.length > 0 && (
-              <Link href="/tasks">
-                <Button variant="outline" className="w-full mt-2">
-                  Voir toutes les tâches
-                </Button>
+        <ScrollAnimation animation="slideUp" delay={100}>
+          <Card className="flex flex-col h-full">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-foreground">Tâches récentes</h3>
+              <Link href="/tasks" className="text-primary hover:text-primary/80 text-sm font-medium">
+                Voir plus →
               </Link>
-            )}
-          </div>
-        </Card>
+            </div>
+            
+            <div className="flex-1 space-y-2">
+              {data.recentTasks.length === 0 ? (
+                <div className="flex items-center justify-center py-12 text-muted-foreground">
+                  <p className="text-sm">Aucune tâche récente</p>
+                </div>
+              ) : (
+                data.recentTasks.map((task, index) => (
+                  <div key={task.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors group">
+                    <input
+                      type="checkbox"
+                      checked={task.status === 'completed'}
+                      readOnly
+                      className="mt-1 rounded cursor-pointer"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium text-sm ${task.status === 'completed' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                        {task.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {task.employee?.first_name} {task.employee?.last_name}
+                      </p>
+                    </div>
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${
+                      task.status === 'completed' ? 'bg-success/10 text-success' :
+                      task.status === 'in_progress' ? 'bg-primary/10 text-primary' :
+                      'bg-muted text-muted-foreground'
+                    }`}>
+                      {task.status === 'completed' ? 'Terminé' :
+                       task.status === 'in_progress' ? 'En cours' : 'En attente'}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </Card>
+        </ScrollAnimation>
 
-        <Card title="Échéances à venir">
-          <div className="space-y-3">
-            {data.upcomingDeadlines.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">Aucune échéance imminente</p>
-            ) : (
-              data.upcomingDeadlines.map((task) => (
-                <div key={task.id} className="flex items-center justify-between rounded-lg border p-3">
-                  <div>
-                    <p className="font-medium text-gray-900">{task.title}</p>
-                    <p className="text-sm text-gray-500">
-                      Due dans {formatDistanceToNow(new Date(task.due_date), { locale: fr, addSuffix: true })}
+        <ScrollAnimation animation="slideUp" delay={200}>
+          <Card className="flex flex-col h-full">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-primary" />
+                Échéances à venir
+              </h3>
+            </div>
+            
+            <div className="flex-1 space-y-2">
+              {data.upcomingDeadlines.length === 0 ? (
+                <div className="flex items-center justify-center py-12 text-muted-foreground">
+                  <p className="text-sm">Aucune échéance imminente</p>
+                </div>
+              ) : (
+                data.upcomingDeadlines.map((task) => (
+                  <div key={task.id} className="p-3 rounded-lg border border-border hover:border-primary/30 transition-colors bg-card">
+                    <p className="font-medium text-sm text-foreground">{task.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Échéance {formatDistanceToNow(new Date(task.due_date), { locale: fr, addSuffix: true })}
                     </p>
                   </div>
-                  <Calendar className="h-5 w-5 text-gray-400" />
-                </div>
-              ))
-            )}
-          </div>
-        </Card>
+                ))
+              )}
+            </div>
+          </Card>
+        </ScrollAnimation>
       </div>
 
-      {/* Actions rapides */}
-      <Card>
-        <h3 className="mb-4 text-lg font-semibold text-gray-900">Actions rapides</h3>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Link href="/employees/new">
-            <Button variant="outline" className="w-full">
-              + Ajouter un employé
-            </Button>
-          </Link>
-          <Link href="/tasks/new">
-            <Button variant="outline" className="w-full">
-              + Créer une tâche
-            </Button>
-          </Link>
-          <Link href="/attendance">
-            <Button variant="outline" className="w-full">
-              ⏱️ Pointer
-            </Button>
-          </Link>
-        </div>
-      </Card>
+      {/* Quick Actions */}
+      <ScrollAnimation animation="slideUp" delay={300}>
+        <Card>
+          <h3 className="mb-6 text-lg font-semibold text-foreground flex items-center gap-2">
+            <Zap className="w-5 h-5 text-primary" />
+            Actions rapides
+          </h3>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Link href="/employees/new" className="block">
+              <Button variant="outline" className="w-full">
+                <Users className="w-4 h-4 mr-2" />
+                Ajouter un employé
+              </Button>
+            </Link>
+            <Link href="/tasks/new" className="block">
+              <Button variant="outline" className="w-full">
+                <CheckSquare className="w-4 h-4 mr-2" />
+                Créer une tâche
+              </Button>
+            </Link>
+            <Link href="/attendance" className="block">
+              <Button variant="outline" className="w-full">
+                <Clock className="w-4 h-4 mr-2" />
+                Pointer la présence
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </ScrollAnimation>
     </div>
   )
 }

@@ -1,9 +1,13 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { ScrollAnimation } from '@/components/ui/ScrollAnimation'
+import { StatWidget } from '@/components/dashboard/StatWidget'
 import { createClient } from '@/lib/supabase/client'
 import { 
   Calendar, 
@@ -15,9 +19,8 @@ import {
   Search,
   Filter,
   Download,
-  ChevronRight,
-  CheckCircle,
-  XCircle,
+  CheckCircle2,
+  AlertCircle,
   PlusCircle
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -270,20 +273,22 @@ export default function AttendancePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">📊 Gestion des présences</h1>
-          <p className="text-gray-600">Suivez et gérez les heures de travail de votre équipe</p>
+      <ScrollAnimation animation="slideDown">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Gestion des présences</h1>
+            <p className="text-muted-foreground mt-1">Suivez et gérez les heures de travail de votre équipe</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" className="gap-2">
+              <Download className="h-4 w-4" />
+              Exporter
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
-            <Download className="h-4 w-4" />
-            Exporter
-          </Button>
-        </div>
-      </div>
+      </ScrollAnimation>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Colonne gauche - Liste des employés */}
@@ -326,7 +331,7 @@ export default function AttendancePage() {
                         </div>
                         {hasTodayRecord && (
                           <div className="flex items-center gap-1 text-xs text-green-600">
-                            <CheckCircle className="h-3 w-3" />
+                            <CheckCircle2 className="h-3 w-3" />
                             <span>Présent</span>
                           </div>
                         )}
@@ -373,24 +378,44 @@ export default function AttendancePage() {
                 </div>
               </Card>
 
-              {/* Statistiques rapides */}
+              {/* Statistics Cards */}
               <div className="grid gap-4 sm:grid-cols-4">
-                <div className="rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 p-3 text-center">
-                  <p className="text-xs text-blue-600">Heures/mois</p>
-                  <p className="text-xl font-bold text-blue-700">{monthStats.totalHours}h</p>
-                </div>
-                <div className="rounded-lg bg-gradient-to-br from-green-50 to-green-100 p-3 text-center">
-                  <p className="text-xs text-green-600">Jours présents</p>
-                  <p className="text-xl font-bold text-green-700">{monthStats.totalDays}</p>
-                </div>
-                <div className="rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 p-3 text-center">
-                  <p className="text-xs text-purple-600">Moyenne/jour</p>
-                  <p className="text-xl font-bold text-purple-700">{monthStats.averageHours}h</p>
-                </div>
-                <div className="rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 p-3 text-center">
-                  <p className="text-xs text-orange-600">Absences</p>
-                  <p className="text-xl font-bold text-orange-700">{monthStats.totalAbsences}</p>
-                </div>
+                <ScrollAnimation animation="slideUp" delay={0}>
+                  <StatWidget
+                    title="Heures/mois"
+                    value={`${monthStats.totalHours}h`}
+                    icon={<Clock className="w-6 h-6" />}
+                    color="primary"
+                    description="Heures travaillées"
+                  />
+                </ScrollAnimation>
+                <ScrollAnimation animation="slideUp" delay={100}>
+                  <StatWidget
+                    title="Jours présents"
+                    value={monthStats.totalDays}
+                    icon={<CheckCircle2 className="w-6 h-6" />}
+                    color="success"
+                    description="Jours travaillés ce mois"
+                  />
+                </ScrollAnimation>
+                <ScrollAnimation animation="slideUp" delay={200}>
+                  <StatWidget
+                    title="Moyenne/jour"
+                    value={`${monthStats.averageHours}h`}
+                    icon={<TrendingUp className="w-6 h-6" />}
+                    color="primary"
+                    description="Heures par jour"
+                  />
+                </ScrollAnimation>
+                <ScrollAnimation animation="slideUp" delay={300}>
+                  <StatWidget
+                    title="Absences"
+                    value={monthStats.totalAbsences}
+                    icon={<AlertCircle className="w-6 h-6" />}
+                    color="error"
+                    description="Jours d'absence"
+                  />
+                </ScrollAnimation>
               </div>
 
               {/* Formulaire */}
