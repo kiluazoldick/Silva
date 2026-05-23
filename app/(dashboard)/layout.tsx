@@ -1,228 +1,277 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import { 
-  LayoutDashboard, 
-  Users, 
-  CheckSquare, 
-  Clock, 
-  BarChart3, 
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import {
+  LayoutDashboard,
+  Users,
+  CheckSquare,
+  Clock,
+  BarChart3,
   Building2,
   LogOut,
   Menu,
-  X
-} from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+  ChevronLeft,
+  ChevronRight,
+  Bell,
+  User,
+} from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Employés', href: '/employees', icon: Users },
-  { name: 'Tâches', href: '/tasks', icon: CheckSquare },
-  { name: 'Présence', href: '/attendance', icon: Clock },
-  { name: 'Statistiques', href: '/statistics', icon: BarChart3 },
-  { name: 'Entreprise', href: '/company', icon: Building2 },
-]
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Employés", href: "/employees", icon: Users },
+  { name: "Tâches", href: "/tasks", icon: CheckSquare },
+  { name: "Présences", href: "/attendance", icon: Clock },
+  { name: "Statistiques", href: "/statistics", icon: BarChart3 },
+  { name: "Entreprise", href: "/company", icon: Building2 },
+];
 
 export default function DashboardLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [user, setUser] = useState<any>(null)
-  const [company, setCompany] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
-  const pathname = usePathname()
-  const supabase = createClient()
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [company, setCompany] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
+  const supabase = createClient();
 
   useEffect(() => {
     const checkAuthAndCompany = async () => {
       try {
-        console.log('Vérification auth...')
-        
-        // Récupérer la session
-        const { data: { session } } = await supabase.auth.getSession()
-        
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
         if (!session) {
-          console.log('Pas de session, redirection login')
-          router.push('/login')
-          return
+          router.push("/login");
+          return;
         }
 
-        setUser(session.user)
-        console.log('Utilisateur connecté:', session.user.id)
+        setUser(session.user);
 
-        // Récupérer l'entreprise
-        const { data: company, error } = await supabase
-          .from('companies')
-          .select('*')
-          .eq('owner_id', session.user.id)
-          .maybeSingle() // Utiliser maybeSingle au lieu de single
+        const { data: company } = await supabase
+          .from("companies")
+          .select("*")
+          .eq("owner_id", session.user.id)
+          .maybeSingle();
 
-        console.log('Résultat recherche entreprise:', { company, error })
-
-        if (!company && pathname !== '/company-setup' && pathname !== '/') {
-  console.log('Pas d\'entreprise, redirection vers company-setup')
-  router.push('/company-setup')
-  return
-}
+        if (!company && pathname !== "/company-setup" && pathname !== "/") {
+          router.push("/company-setup");
+          return;
+        }
 
         if (company) {
-          console.log('Entreprise trouvée:', company.name)
-          setCompany(company)
-          
-          // Si on est sur company-setup et qu'on a une entreprise, rediriger vers dashboard
-          if (pathname === '/company-setup') {
-            router.push('/dashboard')
+          setCompany(company);
+          if (pathname === "/company-setup") {
+            router.push("/dashboard");
           }
         }
       } catch (error) {
-        console.error('Erreur dans checkAuthAndCompany:', error)
+        console.error("Erreur:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    checkAuthAndCompany()
-  }, [router, supabase, pathname])
+    checkAuthAndCompany();
+  }, [router, supabase, pathname]);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
 
-  // Afficher le loader pendant la vérification
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center bg-cream">
         <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-          <p className="text-gray-600">Chargement...</p>
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+          <p className="text-sm text-warm-gray-500">Chargement...</p>
         </div>
       </div>
-    )
+    );
   }
 
-  // Si pas d'utilisateur, ne pas afficher le dashboard
-  if (!user) {
-    return null
-  }
+  if (!user) return null;
+  if (!company && pathname !== "/company-setup") return null;
 
-  // Si pas d'entreprise et pas sur company-setup, ne pas afficher
-  if (!company && pathname !== '/company-setup') {
-    return null
-  }
+  const isCompanySetupPage = pathname === "/company-setup";
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Mobile sidebar backdrop */}
+    <div className="flex h-screen bg-cream">
+      {/* Overlay mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:relative lg:translate-x-0 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div className="flex h-full flex-col">
+      {!isCompanySetupPage && (
+        <aside
+          className={cn(
+            "fixed left-0 top-0 z-50 flex h-screen flex-col bg-white transition-all duration-300 lg:relative",
+            "border-r border-warm-gray-100",
+            collapsed ? "w-20" : "w-64",
+            sidebarOpen
+              ? "translate-x-0"
+              : "-translate-x-full lg:translate-x-0",
+          )}
+        >
           {/* Logo */}
-          <div className="flex h-16 items-center justify-between border-b px-6">
+          <div
+            className={cn(
+              "flex h-16 items-center border-b border-warm-gray-100 transition-all",
+              collapsed ? "justify-center px-2" : "px-5",
+            )}
+          >
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-blue-600"></div>
-              <span className="text-xl font-bold text-gray-900">Silva</span>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
+                <span className="text-sm font-bold text-white">S</span>
+              </div>
+              {!collapsed && (
+                <span className="text-lg font-semibold text-warm-gray-900">
+                  Silva
+                </span>
+              )}
             </Link>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden"
-            >
-              <X className="h-6 w-6" />
-            </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 px-3 py-4">
+          <nav className="flex-1 space-y-1 px-3 py-6">
             {navigation.map((item) => {
-              const Icon = item.icon
+              const isActive =
+                pathname === item.href || pathname?.startsWith(item.href + "/");
+              const Icon = item.icon;
+
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-700 transition-colors hover:bg-gray-100"
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                    isActive
+                      ? "bg-accent/10 text-accent"
+                      : "text-warm-gray-500 hover:bg-warm-gray-50 hover:text-warm-gray-900",
+                    collapsed && "justify-center",
+                  )}
+                  title={collapsed ? item.name : undefined}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span>{item.name}</span>
+                  <Icon size={18} />
+                  {!collapsed && <span>{item.name}</span>}
                 </Link>
-              )
+              );
             })}
           </nav>
 
-          {/* User info */}
-          <div className="border-t p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                <span className="text-sm font-semibold text-blue-600">
+          {/* User section */}
+          <div
+            className={cn(
+              "border-t border-warm-gray-100 py-4",
+              collapsed ? "px-2" : "px-4",
+            )}
+          >
+            <div
+              className={cn(
+                "flex items-center gap-3 rounded-lg",
+                collapsed ? "justify-center" : "px-2",
+              )}
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10">
+                <span className="text-sm font-medium text-accent">
                   {user?.email?.[0].toUpperCase()}
                 </span>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">
-                  {user?.email?.split('@')[0]}
-                </p>
-                <p className="truncate text-xs text-gray-500">
-                  {company?.name || 'Créer une entreprise'}
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
+              {!collapsed && (
+                <div className="flex-1 overflow-hidden">
+                  <p className="truncate text-sm font-medium text-warm-gray-900">
+                    {user?.email?.split("@")[0]}
+                  </p>
+                  <p className="truncate text-xs text-warm-gray-400">
+                    {company?.name}
+                  </p>
+                </div>
+              )}
+              <button
                 onClick={handleSignOut}
-                className="p-2"
+                className={cn(
+                  "rounded-lg p-1.5 text-warm-gray-400 transition-colors hover:bg-warm-gray-100 hover:text-warm-gray-600",
+                  collapsed && "mt-2",
+                )}
+                title="Déconnexion"
               >
-                <LogOut className="h-4 w-4" />
-              </Button>
+                <LogOut size={16} />
+              </button>
             </div>
           </div>
-        </div>
-      </aside>
+
+          {/* Collapse button */}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className={cn(
+              "absolute -right-3 top-20 hidden h-6 w-6 items-center justify-center rounded-full border border-warm-gray-200 bg-white text-warm-gray-400 transition-all duration-200 hover:border-warm-gray-300 hover:text-warm-gray-600 lg:flex",
+              collapsed && "rotate-180",
+            )}
+          >
+            <ChevronLeft size={14} />
+          </button>
+        </aside>
+      )}
 
       {/* Main content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header */}
-        <header className="sticky top-0 z-10 bg-white shadow-sm">
-          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="rounded-lg p-2 hover:bg-gray-100 lg:hidden"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {new Date().toLocaleDateString('fr-FR', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
+        {!isCompanySetupPage && (
+          <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-warm-gray-100 bg-cream/80 px-4 backdrop-blur-sm sm:px-6">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="rounded-lg p-2 text-warm-gray-500 transition-colors hover:bg-warm-gray-100 lg:hidden"
+              >
+                <Menu size={20} />
+              </button>
+              <h1 className="text-sm font-medium text-warm-gray-500">
+                {navigation.find((n) => n.href === pathname)?.name ||
+                  "Dashboard"}
+              </h1>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* Notifications */}
+              <button className="rounded-lg p-2 text-warm-gray-400 transition-colors hover:bg-warm-gray-100 hover:text-warm-gray-600">
+                <Bell size={18} />
+              </button>
+
+              {/* Date */}
+              <span className="hidden text-sm text-warm-gray-400 sm:block">
+                {new Date().toLocaleDateString("fr-FR", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
                 })}
               </span>
+
+              {/* User menu mobile */}
+              <button className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10 lg:hidden">
+                <User size={16} className="text-accent" />
+              </button>
             </div>
-          </div>
-        </header>
+          </header>
+        )}
 
         {/* Page content */}
-        <main className="p-4 sm:p-6">
-          {children}
-        </main>
+        <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
       </div>
     </div>
-  )
+  );
 }
