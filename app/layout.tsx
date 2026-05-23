@@ -5,12 +5,6 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Silva - Gestion d\'Entreprise',
   description: 'Application complète de gestion d\'entreprise',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
 }
 
 export default function RootLayout({
@@ -19,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="fr" className="bg-background text-foreground">
-      <body className="font-sans antialiased transition-colors">
+    <html lang="fr">
+      <body className="font-sans antialiased">
         {children}
         <Toaster position="top-right" richColors />
       </body>

@@ -8,10 +8,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { GlassmorphismForm } from '@/components/ui/GlassmorphismForm'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { Mail, Lock, CheckCircle } from 'lucide-react'
 
 const registerSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -34,13 +32,9 @@ export default function RegisterPage() {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
   })
-
-  const password = watch('password', '')
-  const passwordStrength = password.length >= 8 ? 'strong' : password.length >= 6 ? 'medium' : 'weak'
 
   const onSubmit = async (data: RegisterForm) => {
     setLoading(true)
@@ -78,27 +72,66 @@ export default function RegisterPage() {
   }
 
   return (
-    <GlassmorphismForm
-      title="Créer un compte"
-      description="Rejoignez Silva et gérez votre entreprise"
-    >
-      {/* Logo */}
-      <div className="mb-6 text-center lg:hidden">
-        <Link href="/">
-          <h1 className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">Silva</h1>
-        </Link>
+    <div className="w-full">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Créer un compte</h1>
+        <p className="text-gray-600">Rejoignez Silva et gérez votre entreprise</p>
       </div>
 
-      {/* Google Button */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-900 mb-2">Email</label>
+          <Input
+            type="email"
+            placeholder="vous@exemple.com"
+            {...register('email')}
+            error={errors.email?.message}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-900 mb-2">Mot de passe</label>
+          <Input
+            type="password"
+            placeholder="••••••••"
+            {...register('password')}
+            error={errors.password?.message}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-900 mb-2">Confirmer mot de passe</label>
+          <Input
+            type="password"
+            placeholder="••••••••"
+            {...register('confirmPassword')}
+            error={errors.confirmPassword?.message}
+          />
+        </div>
+
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Inscription...' : 'S\'inscrire'}
+        </Button>
+      </form>
+
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+        <div className="relative flex justify-center text-xs">
+          <span className="px-2 bg-white text-gray-500">ou</span>
+        </div>
+      </div>
+
       <button
         onClick={handleGoogleRegister}
         disabled={googleLoading}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card hover:bg-muted transition-colors font-medium text-foreground disabled:opacity-50"
+        className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
       >
         {googleLoading ? (
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-cyan-600 border-t-transparent" />
         ) : (
-          <svg className="h-4 w-4" viewBox="0 0 24 24">
+          <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
               fill="#4285F4"
@@ -120,88 +153,12 @@ export default function RegisterPage() {
         <span className="text-sm">{googleLoading ? 'Inscription...' : 'Continuer avec Google'}</span>
       </button>
 
-      {/* Separator */}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border"></div>
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="px-2 bg-background text-muted-foreground">ou</span>
-        </div>
-      </div>
-
-      {/* Email */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground flex items-center gap-2">
-          <Mail className="w-4 h-4 text-primary" />
-          Email
-        </label>
-        <Input
-          type="email"
-          placeholder="vous@exemple.com"
-          {...register('email')}
-          error={errors.email?.message}
-          className="rounded-lg"
-        />
-      </div>
-
-      {/* Password */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground flex items-center gap-2">
-          <Lock className="w-4 h-4 text-primary" />
-          Mot de passe
-        </label>
-        <Input
-          type="password"
-          placeholder="••••••••"
-          {...register('password')}
-          error={errors.password?.message}
-          className="rounded-lg"
-        />
-        {password && (
-          <div className="flex gap-1">
-            <div className={`h-1 flex-1 rounded-full ${passwordStrength === 'strong' ? 'bg-success' : passwordStrength === 'medium' ? 'bg-warning' : 'bg-error'}`}></div>
-            <div className={`h-1 flex-1 rounded-full ${passwordStrength === 'strong' ? 'bg-success' : passwordStrength === 'medium' ? 'bg-warning' : 'bg-muted'}`}></div>
-            <div className={`h-1 flex-1 rounded-full ${passwordStrength === 'strong' ? 'bg-success' : 'bg-muted'}`}></div>
-          </div>
-        )}
-      </div>
-
-      {/* Confirm Password */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-primary" />
-          Confirmer mot de passe
-        </label>
-        <Input
-          type="password"
-          placeholder="••••••••"
-          {...register('confirmPassword')}
-          error={errors.confirmPassword?.message}
-          className="rounded-lg"
-        />
-      </div>
-
-      {/* Terms */}
-      <label className="flex items-start gap-2 cursor-pointer">
-        <input type="checkbox" className="mt-1" required />
-        <span className="text-sm text-muted-foreground">
-          J&apos;accepte les <Link href="#" className="text-primary hover:underline">conditions d&apos;utilisation</Link>
-        </span>
-      </label>
-
-      {/* Submit */}
-      <Button type="submit" onClick={handleSubmit(onSubmit)} className="w-full" loading={loading}>
-        S'inscrire
-      </Button>
-
-      {/* Login link */}
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="mt-6 text-center text-sm text-gray-600">
         Déjà un compte?{' '}
-        <Link href="/login" className="font-semibold text-primary hover:underline">
+        <Link href="/login" className="font-semibold text-cyan-600 hover:text-cyan-700">
           Se connecter
         </Link>
       </p>
-    </GlassmorphismForm>
+    </div>
   )
 }
