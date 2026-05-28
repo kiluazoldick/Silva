@@ -88,8 +88,8 @@ export default function RegisterPage() {
               <span className="text-white/80">commencez gratuitement.</span>
             </h1>
             <p className="mt-4 text-lg text-white/70">
-              Plus besoin d'Excel ou de logiciels complexes. Silva centralise
-              tout.
+              Plus besoin d&apos;Excel ou de logiciels complexes. Silva
+              centralise tout.
             </p>
           </div>
 
@@ -227,7 +227,10 @@ export default function RegisterPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4 text-gray-400"
+          >
             <Input
               label="Adresse email"
               type="email"

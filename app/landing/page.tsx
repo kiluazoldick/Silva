@@ -8,16 +8,13 @@ import {
   Clock,
   BarChart3,
   Building2,
-  Calendar,
   ArrowRight,
-  Menu,
-  X,
   Star,
 } from "lucide-react";
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -203,24 +200,9 @@ export default function LandingPage() {
                 e.currentTarget.style.color = "#57534e";
               }}
             >
-              S'inscrire
+              S&apos;inscrire
             </Link>
           </div>
-
-          {/* Mobile menu button - pas de media query dans le style inline */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{
-              display: "block",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: "8px",
-            }}
-            className="md:hidden"
-          >
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
         </div>
       </nav>
 
@@ -287,7 +269,7 @@ export default function LandingPage() {
                 textAlign: "center",
               }}
             >
-              S'inscrire
+              S&apos;inscrire
             </Link>
           </div>
         </div>
@@ -338,7 +320,7 @@ export default function LandingPage() {
             marginBottom: "24px",
           }}
         >
-          La gestion d'entreprise,
+          La gestion d&apos;entreprise,
           <br />
           simplifiée.
         </h1>
@@ -352,8 +334,8 @@ export default function LandingPage() {
             lineHeight: 1.5,
           }}
         >
-          Employés, tâches, présences, statistiques — tout ce qu'il faut pour
-          piloter votre entreprise, dans un seul outil.
+          Employés, tâches, présences, statistiques — tout ce qu&apos;il faut
+          pour piloter votre entreprise, dans un seul outil.
         </p>
         <div
           className="fade-up"
@@ -439,7 +421,7 @@ export default function LandingPage() {
               marginBottom: "16px",
             }}
           >
-            Tout ce qu'il vous faut
+            Tout ce qu&apos;il vous faut
           </h2>
           <p className="fade-up" style={{ fontSize: "16px", color: "#78716c" }}>
             Un outil conçu pour simplifier votre quotidien.
@@ -632,7 +614,7 @@ export default function LandingPage() {
               color: "#292524",
             }}
           >
-            Ce qu'en disent nos utilisateurs
+            Ce qu&apos;en disent nos utilisateurs
           </h2>
         </div>
         <div
@@ -690,7 +672,7 @@ export default function LandingPage() {
                   marginBottom: "20px",
                 }}
               >
-                "{t.content}"
+                &quot;{t.content}&quot;
               </p>
               <div>
                 <p
@@ -739,7 +721,7 @@ export default function LandingPage() {
                 marginBottom: "32px",
               }}
             >
-              Rejoignez les centaines d'entreprises qui utilisent Silva.
+              Rejoignez les centaines d&apos;entreprises qui utilisent Silva.
             </p>
             <Link
               href="/register"
@@ -794,7 +776,7 @@ export default function LandingPage() {
               Silva
             </Link>
             <p style={{ fontSize: "13px", color: "#a8a29e", marginTop: "8px" }}>
-              La gestion d'entreprise, simplifiée.
+              La gestion d&apos;entreprise, simplifiée.
             </p>
           </div>
           <div style={{ display: "flex", gap: "48px", flexWrap: "wrap" }}>

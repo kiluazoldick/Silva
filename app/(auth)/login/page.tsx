@@ -77,7 +77,7 @@ export default function LoginPage() {
 
           <div className="mt-12">
             <h1 className="text-4xl font-bold tracking-tight text-white">
-              La gestion d'entreprise,
+              La gestion d&apos;entreprise,
               <br />
               <span className="text-white/80">simplifiée.</span>
             </h1>
@@ -221,7 +221,10 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4 text-gray-400"
+          >
             <Input
               label="Adresse email"
               type="email"
