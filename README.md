@@ -127,7 +127,7 @@ silva/
 ### 1. Cloner le projet
 
 ```bash
-git clone https://github.com/votre-repo/silva.git
+git clone https://github.com/kiluazoldick/Silva
 cd silva
 ```
 
